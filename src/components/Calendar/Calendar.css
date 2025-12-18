@@ -10,8 +10,41 @@
 /* Calendar Header Controls */
 .calendar-header-controls {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
   margin-bottom: 1rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.view-toggle-buttons {
+  display: flex;
+  gap: 0.5rem;
+  background-color: var(--bg-hover);
+  padding: 0.25rem;
+  border-radius: 6px;
+}
+
+.view-toggle-button {
+  padding: 0.5rem 1rem;
+  background-color: transparent;
+  color: var(--text-primary);
+  border: none;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.view-toggle-button:hover {
+  background-color: var(--bg-hover-secondary);
+}
+
+.view-toggle-button.active {
+  background-color: var(--primary);
+  color: var(--text-inverse);
+  font-weight: 600;
 }
 
 .jump-to-today-button {
@@ -41,6 +74,32 @@
 .banner-container {
   min-height: 3rem;
   margin-bottom: 1rem;
+}
+
+/* Calendar Navigation Controls */
+.calendar-navigation-controls {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.calendar-nav-button {
+  padding: 0.5rem 1.5rem;
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.calendar-nav-button:hover {
+  background-color: var(--bg-hover-secondary);
+  border-color: var(--primary);
+  color: var(--primary);
 }
 
 /* Selection and Error Banners */
@@ -96,18 +155,44 @@
   font-weight: bold;
 }
 
-/* Calendar Container with Slide Animation */
-.calendar-container {
+/* Two Month Grid Layout */
+.two-month-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+  margin-top: 1rem;
   overflow: hidden;
   position: relative;
 }
 
-.calendar-container.slide-forward {
+.two-month-grid.slide-forward {
   animation: slideInFromRight 0.3s ease-out;
 }
 
-.calendar-container.slide-backward {
+.two-month-grid.slide-backward {
   animation: slideInFromLeft 0.3s ease-out;
+}
+
+.two-month-calendar {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.two-month-calendar-header {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1.1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-hover);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-heading);
+  border-radius: 4px 4px 0 0;
+}
+
+.two-month-calendar .react-calendar {
+  width: 100%;
+  border: none;
 }
 
 @keyframes slideInFromRight {
@@ -370,6 +455,53 @@
   flex: 1;
 }
 
+/* Six Month Grid Layout */
+.six-month-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.six-month-calendar {
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  border: 1px solid var(--border-primary);
+}
+
+.six-month-calendar-header {
+  text-align: center;
+  font-weight: 600;
+  font-size: 1rem;
+  padding: 0.75rem 1rem;
+  background-color: var(--bg-hover);
+  border-bottom: 1px solid var(--border-primary);
+  color: var(--text-heading);
+  border-radius: 4px 4px 0 0;
+}
+
+.six-month-calendar .react-calendar {
+  width: 100%;
+  border: none;
+}
+
+.six-month-calendar .react-calendar__tile {
+  height: 60px;
+  font-size: 0.75rem;
+  padding: 2px;
+}
+
+.six-month-calendar .balance-display {
+  font-size: 9px;
+  padding: 1px 2px;
+}
+
+.six-month-calendar .indicator {
+  width: 12px;
+  height: 12px;
+  font-size: 7px;
+}
+
 /* Modal Styles */
 .modal-overlay {
   position: fixed;
@@ -576,6 +708,44 @@
     padding: 1rem;
   }
 
+  .calendar-header-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .view-toggle-buttons {
+    width: 100%;
+  }
+
+  .view-toggle-button {
+    flex: 1;
+    text-align: center;
+  }
+
+  .jump-to-today-button {
+    width: 100%;
+  }
+
+  .two-month-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .two-month-calendar-header {
+    font-size: 0.95rem;
+    padding: 0.5rem;
+  }
+
+  .six-month-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .six-month-calendar-header {
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+
   .react-calendar--doubleView .react-calendar__viewContainer {
     flex-direction: column;
     gap: 1rem;
@@ -612,6 +782,10 @@
 
 /* Tablet */
 @media (min-width: 769px) and (max-width: 1024px) {
+  .six-month-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
   .react-calendar__tile {
     height: 70px;
   }

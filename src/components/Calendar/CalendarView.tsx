@@ -31,6 +31,7 @@ interface CalendarViewProps {
 }
 
 type SelectionMode = 'idle' | 'selecting';
+type ViewMode = '2-month' | '6-month';
 
 const CalendarView: React.FC<CalendarViewProps> = ({
   weeklyBalances,
@@ -50,19 +51,22 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   );
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState('');
+  const [viewMode, setViewMode] = useState<ViewMode>('2-month');
   const [isDoubleView, setIsDoubleView] = useState(window.innerWidth >= 768);
   const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
 
-  // Handle window resize for responsive double view
+  // Handle window resize for responsive double view (only for 2-month mode)
   useEffect(() => {
     const handleResize = () => {
-      setIsDoubleView(window.innerWidth >= 768);
+      if (viewMode === '2-month') {
+        setIsDoubleView(window.innerWidth >= 768);
+      }
     };
 
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  }, [viewMode]);
 
   // Calculate date range based on available weekly balances
   const dateRange = useMemo(() => {
@@ -331,6 +335,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return viewMonth === today.getMonth() && viewYear === today.getFullYear();
   }, [activeStartDate]);
 
+  // Handle view mode changes
+  const handleViewModeChange = (mode: ViewMode) => {
+    setViewMode(mode);
+    if (mode === '2-month') {
+      setIsDoubleView(window.innerWidth >= 768);
+    }
+  };
+
+  // Generate array of months for multi-month views
+  const generateMonthDates = useMemo(() => {
+    const count = viewMode === '6-month' ? 6 : (isDoubleView ? 2 : 1);
+    const dates: Date[] = [];
+    const baseDate = new Date(activeStartDate);
+
+    for (let i = 0; i < count; i++) {
+      const date = new Date(baseDate.getFullYear(), baseDate.getMonth() + i, 1);
+      dates.push(date);
+    }
+
+    return dates;
+  }, [activeStartDate, viewMode, isDoubleView]);
+
   return (
     <div className="calendar-view">
       <div className="banner-container">
@@ -356,6 +382,20 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       <div className="calendar-header-controls">
+        <div className="view-toggle-buttons">
+          <button
+            onClick={() => handleViewModeChange('2-month')}
+            className={`view-toggle-button ${viewMode === '2-month' ? 'active' : ''}`}
+          >
+            2-Month View
+          </button>
+          <button
+            onClick={() => handleViewModeChange('6-month')}
+            className={`view-toggle-button ${viewMode === '6-month' ? 'active' : ''}`}
+          >
+            6-Month View
+          </button>
+        </div>
         <button
           onClick={jumpToToday}
           className="jump-to-today-button"
@@ -365,41 +405,52 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
       </div>
 
-      <div className={`calendar-container ${transitionDirection ? `slide-${transitionDirection}` : ''}`}>
-        <Calendar
-          showDoubleView={isDoubleView}
-          showNeighboringMonth={true}
-          selectRange={false}
-          tileContent={renderTileContent}
-          tileClassName={getTileClassName}
-          onClickDay={handleDayClick}
-          minDetail="month"
-          maxDetail="month"
-          locale="en-US"
-          activeStartDate={activeStartDate}
-          onActiveStartDateChange={({ activeStartDate: newDate }: { activeStartDate: Date | null }) => {
-            if (newDate) {
-              // Determine transition direction
-              const currentMonth = activeStartDate.getMonth();
-              const currentYear = activeStartDate.getFullYear();
-              const newMonth = newDate.getMonth();
-              const newYear = newDate.getFullYear();
-
-              if (newYear > currentYear || (newYear === currentYear && newMonth > currentMonth)) {
-                setTransitionDirection('forward');
-              } else if (newYear < currentYear || (newYear === currentYear && newMonth < currentMonth)) {
-                setTransitionDirection('backward');
-              } else {
-                setTransitionDirection(null);
-              }
-
-              setActiveStartDate(newDate);
-
-              // Clear transition direction after animation completes
-              setTimeout(() => setTransitionDirection(null), 600);
-            }
+      <div className="calendar-navigation-controls">
+        <button
+          onClick={() => {
+            const newDate = new Date(activeStartDate.getFullYear(), activeStartDate.getMonth() - 1, 1);
+            setTransitionDirection('backward');
+            setActiveStartDate(newDate);
+            setTimeout(() => setTransitionDirection(null), 600);
           }}
-        />
+          className="calendar-nav-button"
+        >
+          ‹ Previous
+        </button>
+        <button
+          onClick={() => {
+            const newDate = new Date(activeStartDate.getFullYear(), activeStartDate.getMonth() + 1, 1);
+            setTransitionDirection('forward');
+            setActiveStartDate(newDate);
+            setTimeout(() => setTransitionDirection(null), 600);
+          }}
+          className="calendar-nav-button"
+        >
+          Next ›
+        </button>
+      </div>
+
+      <div className={`${viewMode === '6-month' ? 'six-month-grid' : 'two-month-grid'} ${transitionDirection ? `slide-${transitionDirection}` : ''}`}>
+        {generateMonthDates.map((monthDate, index) => (
+          <div key={index} className={`${viewMode === '6-month' ? 'six-month-calendar' : 'two-month-calendar'}`}>
+            <div className={`${viewMode === '6-month' ? 'six-month-calendar-header' : 'two-month-calendar-header'}`}>
+              {monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
+            </div>
+            <Calendar
+              showDoubleView={false}
+              showNeighboringMonth={true}
+              selectRange={false}
+              tileContent={renderTileContent}
+              tileClassName={getTileClassName}
+              onClickDay={handleDayClick}
+              minDetail="month"
+              maxDetail="month"
+              locale="en-US"
+              activeStartDate={monthDate}
+              showNavigation={false}
+            />
+          </div>
+        ))}
       </div>
 
       <VacationEditModal
