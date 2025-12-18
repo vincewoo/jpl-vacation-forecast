@@ -37,4 +37,4 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages          # target branch
-          folder: build             # or 'dist', whatever your build outputs
+          folder: dist             # or 'dist', whatever your build outputs
