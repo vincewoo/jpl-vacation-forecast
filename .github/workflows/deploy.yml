@@ -1,0 +1,33 @@
+name: Deploy to GitHub Pages
+
+on:
+  push:
+    branches:
+      - main  # or whatever your default branch is
+
+permissions:
+  contents: write  # needed to push to gh-pages
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Use Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22  # or your app's version
+
+      - name: Install and build
+        run: |
+          npm ci
+          npm run build   # adjust to your actual build script
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          branch: gh-pages          # target branch
+          folder: build             # or 'dist', whatever your build outputs
