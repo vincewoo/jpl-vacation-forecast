@@ -31,7 +31,7 @@ interface CalendarViewProps {
 }
 
 type SelectionMode = 'idle' | 'selecting';
-type ViewMode = '2-month' | '6-month';
+type ViewMode = '2-month' | '6-month' | '12-month';
 
 const CalendarView: React.FC<CalendarViewProps> = ({
   weeklyBalances,
@@ -345,7 +345,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   // Generate array of months for multi-month views
   const generateMonthDates = useMemo(() => {
-    const count = viewMode === '6-month' ? 6 : (isDoubleView ? 2 : 1);
+    const count =
+      viewMode === '12-month'
+        ? 12
+        : viewMode === '6-month'
+        ? 6
+        : isDoubleView
+        ? 2
+        : 1;
     const dates: Date[] = [];
     const baseDate = new Date(activeStartDate);
 
@@ -395,6 +402,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           >
             6-Month View
           </button>
+          <button
+            onClick={() => handleViewModeChange('12-month')}
+            className={`view-toggle-button ${viewMode === '12-month' ? 'active' : ''}`}
+          >
+            12-Month View
+          </button>
         </div>
         <button
           onClick={jumpToToday}
@@ -430,10 +443,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
       </div>
 
-      <div className={`${viewMode === '6-month' ? 'six-month-grid' : 'two-month-grid'} ${transitionDirection ? `slide-${transitionDirection}` : ''}`}>
+      <div
+        className={`${
+          viewMode === '12-month'
+            ? 'twelve-month-grid'
+            : viewMode === '6-month'
+            ? 'six-month-grid'
+            : 'two-month-grid'
+        } ${transitionDirection ? `slide-${transitionDirection}` : ''}`}
+      >
         {generateMonthDates.map((monthDate, index) => (
-          <div key={index} className={`${viewMode === '6-month' ? 'six-month-calendar' : 'two-month-calendar'}`}>
-            <div className={`${viewMode === '6-month' ? 'six-month-calendar-header' : 'two-month-calendar-header'}`}>
+          <div
+            key={index}
+            className={`${
+              viewMode === '12-month'
+                ? 'twelve-month-calendar'
+                : viewMode === '6-month'
+                ? 'six-month-calendar'
+                : 'two-month-calendar'
+            }`}
+          >
+            <div
+              className={`${
+                viewMode === '12-month'
+                  ? 'twelve-month-calendar-header'
+                  : viewMode === '6-month'
+                  ? 'six-month-calendar-header'
+                  : 'two-month-calendar-header'
+              }`}
+            >
               {monthDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })}
             </div>
             <Calendar
