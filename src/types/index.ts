@@ -22,7 +22,24 @@ export interface AccrualRate {
   hoursPerMonth: number;
 }
 
-// Holiday
+// Holiday Entry (from JSON configuration)
+export interface HolidayEntry {
+  name: string;
+  date: string; // ISO date string
+  type?: 'federal' | 'jpl' | 'other';
+  notes?: string;
+}
+
+// Holiday Data Structure (from JSON file)
+export interface HolidayData {
+  version: string;
+  lastUpdated: string;
+  holidays: {
+    [year: string]: HolidayEntry[];
+  };
+}
+
+// Holiday (enriched with hours for use in application)
 export interface Holiday {
   name: string;
   date: string; // ISO date string for serialization
@@ -79,7 +96,8 @@ export interface CalendarDay {
 }
 
 export interface CalendarDayInfo extends CalendarDay {
-  balance?: number; // Only for Saturdays - ending balance for the week
+  balance?: number; // Only for Sundays - ending balance for the week
+  accrualRate?: number; // Only for Sundays - accrual rate for that week in hours
   isInVacation?: boolean;
   vacationId?: string; // For clicking to edit
   isHoliday?: boolean;

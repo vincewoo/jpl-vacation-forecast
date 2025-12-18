@@ -40,39 +40,40 @@ export const calculateMonthlyAccrual = (
 };
 
 /**
- * Calculate accrual for a date range (prorated if partial month)
+ * Calculate accrual for a date range using a consistent weekly rate
+ * For a full week (7 days), this ensures consistent accrual regardless of month boundaries
  */
 export const calculateAccrualForRange = (
   startDate: Date,
   rangeStart: Date,
   rangeEnd: Date
 ): number => {
-  let totalAccrual = 0;
+  // Normalize dates to start of day for accurate day counting
+  const normalizedStart = new Date(rangeStart);
+  normalizedStart.setHours(0, 0, 0, 0);
 
-  // Iterate through each month in the range
-  const currentDate = new Date(rangeStart);
+  const normalizedEnd = new Date(rangeEnd);
+  normalizedEnd.setHours(0, 0, 0, 0);
 
-  while (currentDate <= rangeEnd) {
-    const monthStart = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
-    const monthEnd = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+  // Calculate the number of days in the range (inclusive)
+  // For a week (Sunday to Saturday), this should be exactly 7 days
+  const daysInRange = Math.round(
+    (normalizedEnd.getTime() - normalizedStart.getTime()) / (1000 * 60 * 60 * 24)
+  ) + 1;
 
-    const effectiveStart = monthStart > rangeStart ? monthStart : rangeStart;
-    const effectiveEnd = monthEnd < rangeEnd ? monthEnd : rangeEnd;
+  // Get the monthly accrual rate based on years of service
+  // Use the start of the range to determine the accrual tier
+  const yearsOfService = calculateYearsOfService(startDate, rangeStart);
+  const monthlyRate = getAccrualRate(yearsOfService);
 
-    const daysInMonth = monthEnd.getDate();
-    const daysInRange = Math.ceil(
-      (effectiveEnd.getTime() - effectiveStart.getTime()) / (1000 * 60 * 60 * 24)
-    ) + 1;
+  // Convert monthly rate to weekly rate
+  // Using 365.25 days per year to account for leap years
+  const daysPerYear = 365.25;
+  const daysPerMonth = daysPerYear / 12;
+  const weeklyRate = (monthlyRate / daysPerMonth) * 7;
 
-    const monthlyRate = calculateMonthlyAccrual(startDate, currentDate);
-    const proratedAccrual = (monthlyRate / daysInMonth) * daysInRange;
+  // Calculate accrual based on days in range
+  const accrual = (weeklyRate / 7) * daysInRange;
 
-    totalAccrual += proratedAccrual;
-
-    // Move to next month
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    currentDate.setDate(1);
-  }
-
-  return Math.round(totalAccrual * 100) / 100; // Round to 2 decimal places
+  return Math.round(accrual * 100) / 100; // Round to 2 decimal places
 };

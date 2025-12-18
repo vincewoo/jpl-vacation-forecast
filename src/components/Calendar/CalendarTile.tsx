@@ -1,5 +1,6 @@
 import React from 'react';
 import { CalendarDayInfo } from '../../types';
+import { MAX_VACATION_BALANCE, BALANCE_WARNING_THRESHOLD } from '../../utils/balanceCalculator';
 
 interface CalendarTileProps {
   dayInfo: CalendarDayInfo | undefined;
@@ -16,9 +17,9 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
 }) => {
   if (!dayInfo) return null;
 
-  // Debug: log if this is a Saturday with balance data
-  if (dayInfo.date.getDay() === 6) {
-    console.log('Saturday:', dayInfo.date.toISOString().split('T')[0], 'balance:', dayInfo.balance);
+  // Debug: log if this is a Sunday with balance data
+  if (dayInfo.date.getDay() === 0) {
+    console.log('Sunday:', dayInfo.date.toISOString().split('T')[0], 'balance:', dayInfo.balance);
   }
 
   return (
@@ -42,12 +43,19 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
         )}
       </div>
 
-      {/* Saturday balance display */}
+      {/* Sunday balance display */}
       {dayInfo.balance !== undefined && (
         <div
           className={`balance-display ${
-            dayInfo.balance < 0 ? 'negative' : 'positive'
+            dayInfo.balance < 0
+              ? 'negative'
+              : dayInfo.balance >= MAX_VACATION_BALANCE
+              ? 'at-max'
+              : dayInfo.balance > BALANCE_WARNING_THRESHOLD
+              ? 'warning'
+              : 'positive'
           }`}
+          title={dayInfo.accrualRate !== undefined ? `Accrual rate: +${dayInfo.accrualRate.toFixed(2)} hours` : undefined}
         >
           {dayInfo.balance.toFixed(1)}h
         </div>

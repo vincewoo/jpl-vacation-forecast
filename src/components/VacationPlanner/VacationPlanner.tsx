@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { PlannedVacation, WorkSchedule } from '../../types';
+import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { parseDate } from '../../utils/dateUtils';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import VacationList from './VacationList';
@@ -8,6 +8,7 @@ import './VacationPlanner.css';
 interface VacationPlannerProps {
   plannedVacations: PlannedVacation[];
   workSchedule: WorkSchedule;
+  holidays: Holiday[];
   onAdd: (vacation: Omit<PlannedVacation, 'id'>) => void;
   onUpdate: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
@@ -17,6 +18,7 @@ interface VacationPlannerProps {
 const VacationPlanner: React.FC<VacationPlannerProps> = ({
   plannedVacations,
   workSchedule,
+  holidays,
   onAdd,
   onUpdate,
   onDelete,
@@ -45,7 +47,7 @@ const VacationPlanner: React.FC<VacationPlannerProps> = ({
       return;
     }
 
-    const hours = calculateVacationHoursForRange(start, end, workSchedule);
+    const hours = calculateVacationHoursForRange(start, end, workSchedule, holidays);
 
     const newVacation = {
       startDate,
@@ -129,7 +131,7 @@ const VacationPlanner: React.FC<VacationPlannerProps> = ({
 
           {startDate && endDate && parseDate(endDate) >= parseDate(startDate) && (
             <div className="hours-estimate">
-              Estimated hours needed: {calculateVacationHoursForRange(parseDate(startDate), parseDate(endDate), workSchedule).toFixed(2)}
+              Estimated hours needed: {calculateVacationHoursForRange(parseDate(startDate), parseDate(endDate), workSchedule, holidays).toFixed(2)}
             </div>
           )}
 

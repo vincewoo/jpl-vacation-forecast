@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useVacationCalculator } from './hooks/useVacationCalculator';
 import { useHolidays } from './hooks/useHolidays';
 import UserInputForm from './components/UserInputForm/UserInputForm';
@@ -17,23 +17,74 @@ const App: React.FC = () => {
     holidays,
     setHolidays,
     weeklyBalances,
-    annualSummaries,
+    forecastPeriod,
     canAffordVacation,
   } = useVacationCalculator();
 
-  const { defaultHolidays } = useHolidays(userProfile?.workSchedule ?? null);
+  const { defaultHolidays } = useHolidays(
+    userProfile?.workSchedule ?? null,
+    forecastPeriod.startDate,
+    forecastPeriod.endDate
+  );
+
+  // Theme state management
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedTheme = localStorage.getItem('theme');
+    return savedTheme === 'dark';
+  });
+
+  // Apply theme class to document root
+  useEffect(() => {
+    const root = document.documentElement;
+    if (isDarkMode) {
+      root.classList.add('dark');
+      localStorage.setItem('theme', 'dark');
+    } else {
+      root.classList.remove('dark');
+      localStorage.setItem('theme', 'light');
+    }
+  }, [isDarkMode]);
+
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+  };
 
   // Initialize holidays when user profile is set
+  // Also handles migration from old single-year holidays to multi-year holidays
   useEffect(() => {
-    if (userProfile && holidays.length === 0 && defaultHolidays.length > 0) {
+    if (!userProfile || defaultHolidays.length === 0) return;
+
+    // Initialize holidays if none exist
+    if (holidays.length === 0) {
+      setHolidays(defaultHolidays);
+      return;
+    }
+
+    // Update if current holidays don't include multi-year data
+    // (simple heuristic: check if we have any 2027+ holidays)
+    const hasMultiYearHolidays = holidays.some((h) =>
+      h.date && h.date.startsWith('2027')
+    );
+
+    if (!hasMultiYearHolidays) {
       setHolidays(defaultHolidays);
     }
-  }, [userProfile, holidays.length, defaultHolidays, setHolidays]);
+  }, [userProfile, holidays, defaultHolidays, setHolidays]);
 
   return (
     <div className="app">
       <header className="app-header">
-        <h1>JPL Vacation Forecast</h1>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <h1>JPL Vacation Forecast</h1>
+          <button
+            onClick={toggleTheme}
+            className="reset-button"
+            style={{ marginLeft: 'auto' }}
+            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+          </button>
+        </div>
       </header>
 
       <main className="app-main">
@@ -42,63 +93,12 @@ const App: React.FC = () => {
         ) : (
           <div className="dashboard">
             <div className="dashboard-header">
-              <h2>Welcome back!</h2>
               <button
                 onClick={() => setUserProfile(null)}
                 className="reset-button"
               >
                 Reset Profile
               </button>
-            </div>
-
-            <div className="summary-cards">
-              <div className="summary-card">
-                <h3>Current Balance</h3>
-                <div className="balance-value">
-                  {userProfile.currentBalance.toFixed(2)} hours
-                </div>
-              </div>
-
-              <div className="summary-card">
-                <h3>Work Schedule</h3>
-                <div className="schedule-value">
-                  {userProfile.workSchedule.type}
-                  {userProfile.workSchedule.rdoPattern && (
-                    <div className="schedule-detail">
-                      RDO: {userProfile.workSchedule.rdoPattern === 'even-fridays' ? 'Even' : 'Odd'} Week Fridays
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="summary-card">
-                <h3>Planned Vacations</h3>
-                <div className="vacation-count">
-                  {plannedVacations.length} planned
-                </div>
-              </div>
-
-              {annualSummaries.map(summary => (
-                <div key={summary.year} className="summary-card">
-                  <h3>{summary.year} Summary</h3>
-                  <div className="summary-stats">
-                    <div className="summary-stat">
-                      <span className="stat-label">Accrued:</span>
-                      <span className="stat-value positive">{summary.totalAccrued.toFixed(1)}h</span>
-                    </div>
-                    <div className="summary-stat">
-                      <span className="stat-label">Used:</span>
-                      <span className="stat-value negative">{summary.totalUsed.toFixed(1)}h</span>
-                    </div>
-                    <div className="summary-stat">
-                      <span className="stat-label">Ending:</span>
-                      <span className={`stat-value ${summary.endingBalance >= 0 ? 'positive' : 'negative'}`}>
-                        {summary.endingBalance.toFixed(1)}h
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
 
             <CalendarLegend />

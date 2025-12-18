@@ -36,9 +36,9 @@ export const useVacationCalculator = () => {
       };
     }
 
-    // Start from the balanceAsOfDate and forecast for 2 years
+    // Start from the balanceAsOfDate and forecast for 10 years
     const startDate = parseDate(userProfile.balanceAsOfDate);
-    const endDate = new Date(startDate.getFullYear() + 2, 11, 31); // End of year, 2 years from start
+    const endDate = new Date(startDate.getFullYear() + 10, 11, 31); // End of year, 10 years from start
     return { startDate, endDate };
   }, [userProfile]);
 

@@ -1,4 +1,4 @@
-import { AccrualRate, Holiday } from '../types';
+import { AccrualRate } from '../types';
 
 // Accrual rates based on years of service
 export const ACCRUAL_RATES: AccrualRate[] = [
@@ -22,20 +22,8 @@ export const SCHEDULE_CONFIGS = {
   },
 } as const;
 
-// JPL Holidays for 2026 (from spreadsheet cells A8:B20)
-// These would be configurable by the user
-export const DEFAULT_JPL_HOLIDAYS_2026: Omit<Holiday, 'hours'>[] = [
-  { name: "New Year's Day", date: '2026-01-01' },
-  { name: "Martin Luther King Jr. Day", date: '2026-01-19' },
-  { name: "Presidents' Day", date: '2026-02-16' },
-  { name: "Memorial Day", date: '2026-05-25' },
-  { name: "Juneteenth", date: '2026-06-19' },
-  { name: "Independence Day", date: '2026-07-03' }, // Observed
-  { name: "Labor Day", date: '2026-09-07' },
-  { name: "Indigenous Peoples' Day", date: '2026-10-12' },
-  { name: "Veterans Day", date: '2026-11-11' },
-  { name: "Thanksgiving", date: '2026-11-26' },
-  { name: "Day After Thanksgiving", date: '2026-11-27' },
-  { name: "Christmas Eve", date: '2026-12-24' },
-  { name: "Christmas Day", date: '2026-12-25' },
-];
+// JPL Holidays are now configured in src/data/holidays.json
+// This allows for multi-year holiday data and easier updates.
+// The holidays are loaded dynamically by the useHolidays hook,
+// which reads from the JSON file and enriches holidays with
+// work hours based on the user's schedule (5/40 or 9/80).

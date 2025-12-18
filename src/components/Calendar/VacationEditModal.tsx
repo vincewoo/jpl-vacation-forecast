@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useEffect } from 'react';
-import { PlannedVacation, WorkSchedule } from '../../types';
+import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import { parseDate } from '../../utils/dateUtils';
 
@@ -7,6 +7,7 @@ interface VacationEditModalProps {
   vacation: PlannedVacation | null;
   isOpen: boolean;
   workSchedule: WorkSchedule;
+  holidays: Holiday[];
   onSave: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
@@ -20,6 +21,7 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
   vacation,
   isOpen,
   workSchedule,
+  holidays,
   onSave,
   onDelete,
   onClose,
@@ -48,12 +50,13 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
       return calculateVacationHoursForRange(
         parseDate(startDate),
         parseDate(endDate),
-        workSchedule
+        workSchedule,
+        holidays
       );
     } catch {
       return 0;
     }
-  }, [startDate, endDate, workSchedule]);
+  }, [startDate, endDate, workSchedule, holidays]);
 
   const handleSave = () => {
     if (!vacation) return;

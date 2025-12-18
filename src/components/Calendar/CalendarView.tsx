@@ -14,6 +14,7 @@ import { mapWeeklyBalancesToDays } from '../../utils/calendarDataMapper';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import CalendarTile from './CalendarTile';
 import VacationEditModal from './VacationEditModal';
+import VacationListByYear from './VacationListByYear';
 
 interface CalendarViewProps {
   weeklyBalances: WeeklyBalance[];
@@ -50,6 +51,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState('');
   const [isDoubleView, setIsDoubleView] = useState(window.innerWidth >= 768);
+  const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
 
   // Handle window resize for responsive double view
   useEffect(() => {
@@ -61,13 +63,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Calculate date range (current month - 1 month to current month + 2 months)
+  // Calculate date range based on available weekly balances
   const dateRange = useMemo(() => {
-    const today = new Date();
-    const start = new Date(today.getFullYear(), today.getMonth() - 1, 1);
-    const end = new Date(today.getFullYear(), today.getMonth() + 3, 0);
-    return { start, end };
-  }, []);
+    if (weeklyBalances.length === 0) {
+      const today = new Date();
+      return {
+        start: new Date(today.getFullYear(), today.getMonth() - 1, 1),
+        end: new Date(today.getFullYear(), today.getMonth() + 3, 0),
+      };
+    }
+
+    // Use the full range of available balance data
+    const firstWeek = weeklyBalances[0]!;
+    const lastWeek = weeklyBalances[weeklyBalances.length - 1]!;
+
+    return {
+      start: new Date(firstWeek.weekStartDate),
+      end: new Date(lastWeek.weekEndDate),
+    };
+  }, [weeklyBalances]);
 
   // Map data to calendar days
   const dayDataMap = useMemo(
@@ -135,7 +149,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       const hours = calculateVacationHoursForRange(
         start,
         end,
-        userProfile.workSchedule
+        userProfile.workSchedule,
+        holidays
       );
 
       // Validate affordability
@@ -186,13 +201,63 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Helper function to check if a date should be hidden (beyond the last week of the month)
+  const shouldHideTile = useCallback(({ date, view, activeStartDate }: { date: Date; view: string; activeStartDate: Date }) => {
+    if (view !== 'month') return false;
+
+    // Get the month being displayed
+    const displayMonth = activeStartDate.getMonth();
+    const displayYear = activeStartDate.getFullYear();
+
+    // Get the last day of the display month
+    const lastDayOfMonth = new Date(displayYear, displayMonth + 1, 0);
+
+    // Hide dates before the first of the month
+    if (date < new Date(displayYear, displayMonth, 1)) {
+      return true;
+    }
+
+    // Find the Saturday that ends the week containing the last day of the month
+    const lastDay = lastDayOfMonth.getDay();
+    const daysUntilSaturday = lastDay === 6 ? 0 : (6 - lastDay + 7) % 7;
+    const lastSaturdayOfWeek = new Date(displayYear, displayMonth, lastDayOfMonth.getDate() + daysUntilSaturday);
+
+    // Hide dates after that Saturday
+    if (date > lastSaturdayOfWeek) {
+      return true;
+    }
+
+    return false;
+  }, []);
+
+  // Helper function to check if a date is from the next month
+  const isNextMonthDay = useCallback(({ date, activeStartDate }: { date: Date; activeStartDate: Date }) => {
+    const displayMonth = activeStartDate.getMonth();
+    const displayYear = activeStartDate.getFullYear();
+    const lastDayOfMonth = new Date(displayYear, displayMonth + 1, 0);
+
+    return date > lastDayOfMonth;
+  }, []);
+
   // Generate tile class names
   const getTileClassName = useCallback(
-    ({ date, view }: { date: Date; view: string }) => {
+    ({ date, view, activeStartDate }: { date: Date; view: string; activeStartDate: Date }) => {
       if (view !== 'month') return '';
 
-      const dayInfo = dayDataMap.get(formatDate(date));
       const classes: string[] = [];
+
+      // Hide tiles outside the month's last week
+      if (shouldHideTile({ date, view, activeStartDate })) {
+        classes.push('react-calendar__tile--hidden');
+        return classes.join(' ');
+      }
+
+      // Mark tiles from the next month with a different style
+      if (isNextMonthDay({ date, activeStartDate })) {
+        classes.push('react-calendar__tile--next-month');
+      }
+
+      const dayInfo = dayDataMap.get(formatDate(date));
 
       if (dayInfo?.isInVacation) classes.push('react-calendar__tile--vacation');
       if (dayInfo?.isHoliday) classes.push('react-calendar__tile--holiday');
@@ -219,7 +284,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       return classes.join(' ');
     },
-    [dayDataMap, selectionRange]
+    [dayDataMap, selectionRange, shouldHideTile, isNextMonthDay]
   );
 
   // Render tile content
@@ -256,6 +321,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     [dayDataMap, selectionRange, startDate, hoverDate, selectionMode]
   );
 
+  // Jump to today function
+  const jumpToToday = () => {
+    setActiveStartDate(new Date());
+  };
+
+  // Check if we're currently viewing today's month
+  const isViewingCurrentMonth = useMemo(() => {
+    const today = new Date();
+    const viewMonth = activeStartDate.getMonth();
+    const viewYear = activeStartDate.getFullYear();
+    return viewMonth === today.getMonth() && viewYear === today.getFullYear();
+  }, [activeStartDate]);
+
   return (
     <div className="calendar-view">
       {selectionMode === 'selecting' && (
@@ -278,6 +356,16 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </div>
       )}
 
+      <div className="calendar-header-controls">
+        <button
+          onClick={jumpToToday}
+          className="jump-to-today-button"
+          disabled={isViewingCurrentMonth}
+        >
+          Jump to Today
+        </button>
+      </div>
+
       <Calendar
         showDoubleView={isDoubleView}
         showNeighboringMonth={true}
@@ -288,12 +376,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         minDetail="month"
         maxDetail="month"
         locale="en-US"
+        activeStartDate={activeStartDate}
+        onActiveStartDateChange={({ activeStartDate }: { activeStartDate: Date | null }) => {
+          if (activeStartDate) {
+            setActiveStartDate(activeStartDate);
+          }
+        }}
       />
 
       <VacationEditModal
         vacation={editingVacation}
         isOpen={showEditModal}
         workSchedule={userProfile.workSchedule}
+        holidays={holidays}
         onSave={onUpdateVacation}
         onDelete={onDeleteVacation}
         onClose={() => {
@@ -301,6 +396,15 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           setEditingVacation(null);
         }}
         canAffordVacation={canAffordVacation}
+      />
+
+      <VacationListByYear
+        vacations={plannedVacations}
+        onEdit={(vacation) => {
+          setEditingVacation(vacation);
+          setShowEditModal(true);
+        }}
+        onDelete={onDeleteVacation}
       />
     </div>
   );

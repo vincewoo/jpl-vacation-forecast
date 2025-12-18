@@ -1,6 +1,6 @@
-import { RDOPattern, WorkSchedule } from '../types';
+import { RDOPattern, WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
-import { getDatesInRange } from './dateUtils';
+import { getDatesInRange, parseDate } from './dateUtils';
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -81,17 +81,29 @@ export const getRDODatesInRange = (
 
 /**
  * Calculate total vacation hours needed for a date range
- * Excludes weekends and RDOs, only counts actual work days
+ * Excludes weekends, RDOs, and holidays - only counts actual work days
  */
 export const calculateVacationHoursForRange = (
   startDate: Date,
   endDate: Date,
-  workSchedule: WorkSchedule
+  workSchedule: WorkSchedule,
+  holidays: Holiday[] = []
 ): number => {
   let totalHours = 0;
   const dates = getDatesInRange(startDate, endDate);
 
+  // Create a Set of holiday date strings for fast lookup
+  const holidayDates = new Set(
+    holidays.map(h => parseDate(h.date).toISOString().split('T')[0])
+  );
+
   for (const date of dates) {
+    // Skip this date if it's a holiday
+    const dateStr = date.toISOString().split('T')[0];
+    if (holidayDates.has(dateStr)) {
+      continue;
+    }
+
     totalHours += getWorkHoursForDay(date, workSchedule);
   }
 

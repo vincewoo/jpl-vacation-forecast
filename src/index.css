@@ -3,14 +3,142 @@
   line-height: 1.5;
   font-weight: 400;
 
+  /* Light theme colors */
+  --bg-primary: #e8e8e8;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #f5f5f5;
+  --bg-hover: #f0f0f0;
+  --bg-hover-secondary: #e8e8e8;
+  --bg-header: #0066cc;
+
+  --text-primary: rgba(0, 0, 0, 0.87);
+  --text-secondary: #555;
+  --text-heading: #222;
+  --text-inverse: #ffffff;
+
+  --border-primary: #c0c0c0;
+  --border-secondary: #b0b0b0;
+  --border-tertiary: #a0a0a0;
+  --border-light: #d8d8d8;
+
+  --primary: #0066cc;
+  --primary-hover: #0052a3;
+  --primary-active: #003d7a;
+  --primary-light: #4a9eff;
+
+  --success: #2e7d32;
+  --success-light: #388e3c;
+  --error: #d32f2f;
+  --error-hover: #b71c1c;
+  --error-dark: #c62828;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.12);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.15);
+  --shadow-focus: 0 0 0 3px rgba(0, 102, 204, 0.15);
+
+  --calendar-vacation-bg: #ead4f0;
+  --calendar-vacation: #8e24aa;
+  --calendar-holiday-bg: #ffe0b2;
+  --calendar-holiday: #f57c00;
+  --calendar-rdo-bg: #bbdefb;
+  --calendar-rdo: #1976d2;
+  --calendar-weekend-bg: #eeeeee;
+  --calendar-selection-bg: #c5e1a5;
+  --calendar-selection: #4caf50;
+  --calendar-selection-solid: #81c784;
+
+  --banner-info-bg: #e3f2fd;
+  --banner-info-border: #2196f3;
+  --banner-info-text: #1565c0;
+  --banner-error-bg: #ffebee;
+  --banner-error-border: #d32f2f;
+  --banner-error-text: #c62828;
+
+  --balance-positive-bg: rgba(56, 142, 60, 0.1);
+  --balance-negative-bg: #ffebee;
+  --table-header-bg: #f5f5f5;
+  --table-hover: #fafafa;
+  --table-current-week: #e3f2fd;
+  --table-current-week-hover: #d1e8fa;
+  --table-negative-week: #ffebee;
+  --table-negative-week-hover: #ffcdd2;
+
+  --modal-overlay: rgba(0, 0, 0, 0.5);
+
   color-scheme: light;
-  color: rgba(0, 0, 0, 0.87);
-  background-color: #f5f5f5;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+:root.dark {
+  /* Dark theme colors */
+  --bg-primary: #0f0f0f;
+  --bg-secondary: #1e1e1e;
+  --bg-tertiary: #252525;
+  --bg-hover: #2a2a2a;
+  --bg-hover-secondary: #333333;
+  --bg-header: #003d82;
+
+  --text-primary: #e0e0e0;
+  --text-secondary: #b0b0b0;
+  --text-heading: #f5f5f5;
+  --text-inverse: #0f0f0f;
+
+  --border-primary: #3a3a3a;
+  --border-secondary: #404040;
+  --border-tertiary: #4a4a4a;
+  --border-light: #2a2a2a;
+
+  --primary: #4a9eff;
+  --primary-hover: #6bb1ff;
+  --primary-active: #3b8ee8;
+  --primary-light: #5da9ff;
+
+  --success: #4caf50;
+  --success-light: #66bb6a;
+  --error: #ef5350;
+  --error-hover: #e53935;
+  --error-dark: #f44336;
+
+  --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 2px 8px rgba(0, 0, 0, 0.4);
+  --shadow-focus: 0 0 0 3px rgba(74, 158, 255, 0.2);
+
+  --calendar-vacation-bg: #2d1a33;
+  --calendar-vacation: #ba68c8;
+  --calendar-holiday-bg: #332010;
+  --calendar-holiday: #ffb74d;
+  --calendar-rdo-bg: #0d2538;
+  --calendar-rdo: #64b5f6;
+  --calendar-weekend-bg: #1a1a1a;
+  --calendar-selection-bg: #2a3d2a;
+  --calendar-selection: #66bb6a;
+  --calendar-selection-solid: #4caf50;
+
+  --banner-info-bg: #0d2538;
+  --banner-info-border: #42a5f5;
+  --banner-info-text: #64b5f6;
+  --banner-error-bg: #3d1515;
+  --banner-error-border: #ef5350;
+  --banner-error-text: #ff8a80;
+
+  --balance-positive-bg: rgba(76, 175, 80, 0.15);
+  --balance-negative-bg: #3d1515;
+  --table-header-bg: #1a1a1a;
+  --table-hover: #252525;
+  --table-current-week: #0d2538;
+  --table-current-week-hover: #153044;
+  --table-negative-week: #3d1515;
+  --table-negative-week-hover: #4a1818;
+
+  --modal-overlay: rgba(0, 0, 0, 0.75);
+
+  color-scheme: dark;
 }
 
 body {

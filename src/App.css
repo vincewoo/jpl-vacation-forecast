@@ -10,7 +10,7 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: #f5f5f5;
+  background-color: var(--bg-primary);
 }
 
 .app {
@@ -20,10 +20,10 @@ body {
 }
 
 .app-header {
-  background-color: #0066cc;
-  color: white;
+  background-color: var(--bg-header);
+  color: var(--text-inverse);
   padding: 1.5rem 2rem;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .app-header h1 {
@@ -49,15 +49,15 @@ body {
 }
 
 .dashboard-header h2 {
-  color: #333;
+  color: var(--text-heading);
   font-size: 1.5rem;
 }
 
 .reset-button {
   padding: 0.5rem 1rem;
-  background-color: #fff;
-  color: #0066cc;
-  border: 1px solid #0066cc;
+  background-color: var(--bg-secondary);
+  color: var(--primary);
+  border: 1px solid var(--primary);
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
@@ -65,8 +65,8 @@ body {
 }
 
 .reset-button:hover {
-  background-color: #0066cc;
-  color: white;
+  background-color: var(--primary);
+  color: var(--text-inverse);
 }
 
 .summary-cards {
@@ -77,14 +77,14 @@ body {
 }
 
 .summary-card {
-  background: white;
+  background: var(--bg-secondary);
   padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .summary-card h3 {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.875rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -95,18 +95,18 @@ body {
 .balance-value {
   font-size: 2rem;
   font-weight: 700;
-  color: #0066cc;
+  color: var(--primary);
 }
 
 .schedule-value {
   font-size: 1.5rem;
   font-weight: 600;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .schedule-detail {
   font-size: 0.875rem;
-  color: #666;
+  color: var(--text-secondary);
   margin-top: 0.5rem;
   font-weight: normal;
 }
@@ -114,7 +114,7 @@ body {
 .vacation-count {
   font-size: 2rem;
   font-weight: 700;
-  color: #333;
+  color: var(--text-heading);
 }
 
 .summary-stats {
@@ -131,7 +131,7 @@ body {
 }
 
 .stat-label {
-  color: #666;
+  color: var(--text-secondary);
   font-weight: 500;
 }
 
@@ -141,22 +141,22 @@ body {
 }
 
 .stat-value.positive {
-  color: #2e7d32;
+  color: var(--success);
 }
 
 .stat-value.negative {
-  color: #d32f2f;
+  color: var(--error);
 }
 
 .placeholder-section {
-  background: white;
+  background: var(--bg-secondary);
   padding: 3rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
   text-align: center;
 }
 
 .placeholder-section p {
-  color: #666;
+  color: var(--text-secondary);
   margin-bottom: 0.5rem;
 }

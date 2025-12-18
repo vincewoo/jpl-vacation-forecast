@@ -1,22 +1,28 @@
 /**
- * Get the start of the week (Sunday) for a given date
+ * Get the start of the week (Monday) for a given date
  */
 export const getWeekStart = (date: Date): Date => {
   const result = new Date(date);
   const day = result.getDay();
-  const diff = day === 0 ? 0 : -day;
-  result.setDate(result.getDate() + diff);
+  // Convert Sunday (0) to 7 for easier calculation
+  const dayOfWeek = day === 0 ? 7 : day;
+  // Calculate days to subtract to get to Monday (1)
+  const diff = dayOfWeek - 1;
+  result.setDate(result.getDate() - diff);
   result.setHours(0, 0, 0, 0);
   return result;
 };
 
 /**
- * Get the end of the week (Saturday) for a given date
+ * Get the end of the week (Sunday) for a given date
  */
 export const getWeekEnd = (date: Date): Date => {
   const result = new Date(date);
   const day = result.getDay();
-  const diff = day === 0 ? 6 : 6 - day;
+  // Convert Sunday (0) to 7 for easier calculation
+  const dayOfWeek = day === 0 ? 7 : day;
+  // Calculate days to add to get to Sunday (7)
+  const diff = 7 - dayOfWeek;
   result.setDate(result.getDate() + diff);
   result.setHours(23, 59, 59, 999);
   return result;

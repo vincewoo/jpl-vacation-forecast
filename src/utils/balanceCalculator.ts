@@ -15,6 +15,10 @@ import {
 import { calculateAccrualForRange } from './accrualCalculator';
 import { getRDODatesInRange } from './workScheduleUtils';
 
+// JPL vacation balance limits
+export const MAX_VACATION_BALANCE = 320; // Maximum accrual cap in hours
+export const BALANCE_WARNING_THRESHOLD = 280; // Warning threshold in hours
+
 /**
  * Calculate weekly balances for a date range
  */
@@ -34,7 +38,8 @@ export const calculateWeeklyBalances = (
   for (const weekStart of weeks) {
     const weekEnd = getWeekEnd(weekStart);
 
-    // Calculate accrual for this week, but only if it's after the balanceAsOfDate
+    // Calculate accrual for this week, but only if the week starts on or after the balanceAsOfDate
+    // The balanceAsOfDate represents the starting balance at the beginning of that date
     const accrued = weekStart >= balanceAsOfDate
       ? calculateAccrualForRange(profileStartDate, weekStart, weekEnd)
       : 0;
@@ -64,9 +69,10 @@ export const calculateWeeklyBalances = (
     // Calculate total hours used this week
     const used = weekVacations.reduce((sum, v) => sum + v.hours, 0);
 
-    // Calculate ending balance
+    // Calculate ending balance and cap at maximum
     const startingBalance = runningBalance;
-    const endingBalance = startingBalance + accrued - used;
+    const uncappedEndingBalance = startingBalance + accrued - used;
+    const endingBalance = Math.min(uncappedEndingBalance, MAX_VACATION_BALANCE);
 
     balances.push({
       weekStartDate: formatDate(weekStart),

@@ -72,14 +72,15 @@ export const mapWeeklyBalancesToDays = (
       types.push(DayType.PLANNED_VACATION);
     }
 
-    // Get balance if Saturday (end of week)
+    // Get balance and accrual rate if Sunday (end of week)
     let balance: number | undefined;
-    if (date.getDay() === 6) { // Saturday
+    let accrualRate: number | undefined;
+    if (date.getDay() === 0) { // Sunday
       const weekBalance = weeklyBalances.find(wb => {
         const weekEndDate = parseDate(wb.weekEndDate);
         const match = formatDate(weekEndDate) === dateKey;
-        if (dateKey === '2026-01-03') {
-          console.log('Debug for 2026-01-03:', {
+        if (dateKey === '2026-01-04') {
+          console.log('Debug for 2026-01-04:', {
             weekEndDate: wb.weekEndDate,
             parsedWeekEndDate: weekEndDate,
             formattedWeekEndDate: formatDate(weekEndDate),
@@ -90,8 +91,9 @@ export const mapWeeklyBalancesToDays = (
         return match;
       });
       balance = weekBalance?.endingBalance;
-      if (dateKey === '2026-01-03') {
-        console.log('Found balance for 2026-01-03:', balance, 'weekBalance:', weekBalance);
+      accrualRate = weekBalance?.accrued;
+      if (dateKey === '2026-01-04') {
+        console.log('Found balance for 2026-01-04:', balance, 'weekBalance:', weekBalance);
       }
     }
 
@@ -101,6 +103,7 @@ export const mapWeeklyBalancesToDays = (
       hours: getWorkHoursForDay(date, workSchedule),
       vacationHours: vacation?.hours,
       balance,
+      accrualRate,
       isInVacation: !!vacation,
       vacationId: vacation?.id,
       isHoliday: !!holiday,
