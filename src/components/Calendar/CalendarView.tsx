@@ -237,6 +237,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       return (
         <div
+          className="calendar-tile-wrapper"
           onMouseEnter={() => {
             if (selectionMode === 'selecting' && startDate) {
               setHoverDate(date);
