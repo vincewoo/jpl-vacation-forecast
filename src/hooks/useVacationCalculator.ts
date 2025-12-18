@@ -93,7 +93,8 @@ export const useVacationCalculator = () => {
     const projectedBalance = calculateProjectedBalance(
       userProfile,
       vacationEndDate,
-      [...plannedVacations, { ...vacation, id: 'temp' }]
+      [...plannedVacations, { ...vacation, id: 'temp' }],
+      holidays
     );
 
     return {

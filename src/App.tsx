@@ -80,7 +80,7 @@ const App: React.FC = () => {
     <div className="app">
       <header className="app-header">
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
-          <h1>JPL Vacation Forecast</h1>
+          <h1>JPL Vacation Forecast 🌴</h1>
           <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto', alignItems: 'center' }}>
             <SyncStatusIndicator onClick={() => setIsCloudSyncPanelOpen(!isCloudSyncPanelOpen)} />
             <button

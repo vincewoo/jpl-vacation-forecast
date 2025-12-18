@@ -1,10 +1,13 @@
 import React, { useMemo } from 'react';
-import { PlannedVacation } from '../../types';
+import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { parseDate } from '../../utils/dateUtils';
+import { getVacationHours } from '../../utils/workScheduleUtils';
 import './VacationListByYear.css';
 
 interface VacationListByYearProps {
   vacations: PlannedVacation[];
+  workSchedule: WorkSchedule;
+  holidays: Holiday[];
   onEdit: (vacation: PlannedVacation) => void;
   onDelete: (id: string) => void;
 }
@@ -16,6 +19,8 @@ interface GroupedVacation {
 
 const VacationListByYear: React.FC<VacationListByYearProps> = ({
   vacations,
+  workSchedule,
+  holidays,
   onEdit,
   onDelete,
 }) => {
@@ -96,7 +101,7 @@ const VacationListByYear: React.FC<VacationListByYearProps> = ({
                       {vacation.description || <span className="no-description">—</span>}
                     </td>
                     <td className="vacation-duration">{getDuration(vacation)}</td>
-                    <td className="vacation-hours">{vacation.hours.toFixed(1)}h</td>
+                    <td className="vacation-hours">{getVacationHours(vacation, workSchedule, holidays).toFixed(1)}h</td>
                     <td className="vacation-actions">
                       <button
                         onClick={() => onEdit(vacation)}

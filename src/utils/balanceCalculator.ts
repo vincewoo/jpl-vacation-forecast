@@ -13,7 +13,7 @@ import {
   formatDate
 } from './dateUtils';
 import { calculateAccrualForRange } from './accrualCalculator';
-import { getRDODatesInRange } from './workScheduleUtils';
+import { getRDODatesInRange, getVacationHours } from './workScheduleUtils';
 
 // JPL vacation balance limits
 export const MAX_VACATION_BALANCE = 320; // Maximum accrual cap in hours
@@ -66,8 +66,11 @@ export const calculateWeeklyBalances = (
       ? getRDODatesInRange(weekStart, weekEnd, userProfile.workSchedule.rdoPattern)
       : [];
 
-    // Calculate total hours used this week
-    const used = weekVacations.reduce((sum, v) => sum + v.hours, 0);
+    // Calculate total hours used this week (dynamically calculated from vacation dates)
+    const used = weekVacations.reduce((sum, v) => {
+      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
+      return sum + vacationHours;
+    }, 0);
 
     // Calculate ending balance and cap at maximum
     const startingBalance = runningBalance;
@@ -147,7 +150,8 @@ export const calculateAnnualSummary = (
 export const calculateProjectedBalance = (
   userProfile: UserProfile,
   targetDate: Date,
-  plannedVacations: PlannedVacation[]
+  plannedVacations: PlannedVacation[],
+  holidays: Holiday[] = []
 ): number => {
   const today = new Date();
   const profileStartDate = parseDate(userProfile.startDate);
@@ -155,13 +159,16 @@ export const calculateProjectedBalance = (
   // Calculate accrual from today to target date
   const accrued = calculateAccrualForRange(profileStartDate, today, targetDate);
 
-  // Calculate vacation usage from today to target date
+  // Calculate vacation usage from today to target date (dynamically calculated)
   const used = plannedVacations
     .filter(vacation => {
       const vacEnd = parseDate(vacation.endDate);
       return vacEnd <= targetDate;
     })
-    .reduce((sum, v) => sum + v.hours, 0);
+    .reduce((sum, v) => {
+      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
+      return sum + vacationHours;
+    }, 0);
 
   return userProfile.currentBalance + accrued - used;
 };

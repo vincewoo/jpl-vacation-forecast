@@ -51,8 +51,8 @@ export interface PlannedVacation {
   id: string;
   startDate: string; // ISO date string for serialization
   endDate: string; // ISO date string for serialization
-  hours: number; // Total hours of vacation used
   description?: string;
+  // Note: hours are calculated dynamically based on work schedule and holidays
 }
 
 // Weekly Balance Record

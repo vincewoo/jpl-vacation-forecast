@@ -76,7 +76,6 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
     const { canAfford, projectedBalance } = canAffordVacation({
       startDate,
       endDate,
-      hours,
     });
 
     if (!canAfford) {
@@ -92,7 +91,6 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
     onSave(vacation.id, {
       startDate,
       endDate,
-      hours,
       description: description.trim() || undefined,
     });
 

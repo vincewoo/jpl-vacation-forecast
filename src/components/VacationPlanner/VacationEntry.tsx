@@ -1,15 +1,18 @@
 import React from 'react';
-import { PlannedVacation } from '../../types';
+import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { parseDate } from '../../utils/dateUtils';
+import { getVacationHours } from '../../utils/workScheduleUtils';
 import './VacationPlanner.css';
 
 interface VacationEntryProps {
   vacation: PlannedVacation;
+  workSchedule: WorkSchedule;
+  holidays: Holiday[];
   onUpdate: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
 }
 
-const VacationEntry: React.FC<VacationEntryProps> = ({ vacation, onDelete }) => {
+const VacationEntry: React.FC<VacationEntryProps> = ({ vacation, workSchedule, holidays, onDelete }) => {
   const formatDateDisplay = (dateString: string): string => {
     const date = parseDate(dateString);
     return date.toLocaleDateString('en-US', {
@@ -39,7 +42,7 @@ const VacationEntry: React.FC<VacationEntryProps> = ({ vacation, onDelete }) => 
           <div className="vacation-entry-description">{vacation.description}</div>
         )}
         <div className="vacation-entry-hours">
-          {vacation.hours.toFixed(2)} hours
+          {getVacationHours(vacation, workSchedule, holidays).toFixed(2)} hours
         </div>
       </div>
       <div className="vacation-entry-actions">

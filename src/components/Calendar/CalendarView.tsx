@@ -146,22 +146,19 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       const [start, end] =
         date < startDate ? [date, startDate] : [startDate, date];
 
-      // Calculate hours
-      const hours = calculateVacationHoursForRange(
-        start,
-        end,
-        userProfile.workSchedule,
-        holidays
-      );
-
       // Validate affordability
       const { canAfford, projectedBalance } = canAffordVacation({
         startDate: formatDate(start),
         endDate: formatDate(end),
-        hours,
       });
 
       if (!canAfford) {
+        const hours = calculateVacationHoursForRange(
+          start,
+          end,
+          userProfile.workSchedule,
+          holidays
+        );
         setError(
           `Insufficient balance. Need ${hours}h, will have ${projectedBalance.toFixed(
             2
@@ -175,7 +172,6 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       onAddVacation({
         startDate: formatDate(start),
         endDate: formatDate(end),
-        hours,
       });
 
       // Reset selection
@@ -422,6 +418,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       <VacationListByYear
         vacations={plannedVacations}
+        workSchedule={userProfile.workSchedule}
+        holidays={holidays}
         onEdit={(vacation) => {
           setEditingVacation(vacation);
           setShowEditModal(true);

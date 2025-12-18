@@ -47,12 +47,9 @@ const VacationPlanner: React.FC<VacationPlannerProps> = ({
       return;
     }
 
-    const hours = calculateVacationHoursForRange(start, end, workSchedule, holidays);
-
     const newVacation = {
       startDate,
       endDate,
-      hours,
       description: description.trim() || undefined,
     };
 
@@ -60,6 +57,7 @@ const VacationPlanner: React.FC<VacationPlannerProps> = ({
     const { canAfford, projectedBalance } = canAffordVacation(newVacation);
 
     if (!canAfford) {
+      const hours = calculateVacationHoursForRange(start, end, workSchedule, holidays);
       setError(
         `Insufficient vacation hours. This vacation requires ${hours.toFixed(2)} hours, but you will only have ${projectedBalance.toFixed(2)} hours available by ${endDate}.`
       );
@@ -150,6 +148,8 @@ const VacationPlanner: React.FC<VacationPlannerProps> = ({
 
       <VacationList
         vacations={plannedVacations}
+        workSchedule={workSchedule}
+        holidays={holidays}
         onUpdate={onUpdate}
         onDelete={onDelete}
       />

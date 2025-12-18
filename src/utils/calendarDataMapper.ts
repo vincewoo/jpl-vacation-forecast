@@ -12,7 +12,7 @@ import {
   formatDate,
   isDateInRange
 } from './dateUtils';
-import { isWeekend, isRDO, getWorkHoursForDay } from './workScheduleUtils';
+import { isWeekend, isRDO, getWorkHoursForDay, getVacationHours } from './workScheduleUtils';
 
 /**
  * Maps weekly balances, vacations, and holidays to calendar day information
@@ -101,7 +101,7 @@ export const mapWeeklyBalancesToDays = (
       date,
       types,
       hours: getWorkHoursForDay(date, workSchedule),
-      vacationHours: vacation?.hours,
+      vacationHours: vacation ? getVacationHours(vacation, workSchedule, holidays) : undefined,
       balance,
       accrualRate,
       isInVacation: !!vacation,

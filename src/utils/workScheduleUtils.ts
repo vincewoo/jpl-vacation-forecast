@@ -119,3 +119,17 @@ export const isRDO = (date: Date, workSchedule: WorkSchedule): boolean => {
   }
   return isRDOFriday(date, workSchedule.rdoPattern);
 };
+
+/**
+ * Get vacation hours for a PlannedVacation object dynamically
+ * This calculates hours based on current work schedule and holiday data
+ */
+export const getVacationHours = (
+  vacation: { startDate: string; endDate: string },
+  workSchedule: WorkSchedule,
+  holidays: Holiday[] = []
+): number => {
+  const startDate = parseDate(vacation.startDate);
+  const endDate = parseDate(vacation.endDate);
+  return calculateVacationHoursForRange(startDate, endDate, workSchedule, holidays);
+};

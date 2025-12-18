@@ -1,15 +1,17 @@
 import React from 'react';
-import { PlannedVacation } from '../../types';
+import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import VacationEntry from './VacationEntry';
 import './VacationPlanner.css';
 
 interface VacationListProps {
   vacations: PlannedVacation[];
+  workSchedule: WorkSchedule;
+  holidays: Holiday[];
   onUpdate: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
 }
 
-const VacationList: React.FC<VacationListProps> = ({ vacations, onUpdate, onDelete }) => {
+const VacationList: React.FC<VacationListProps> = ({ vacations, workSchedule, holidays, onUpdate, onDelete }) => {
   if (vacations.length === 0) {
     return (
       <div className="empty-state">
@@ -30,6 +32,8 @@ const VacationList: React.FC<VacationListProps> = ({ vacations, onUpdate, onDele
         <VacationEntry
           key={vacation.id}
           vacation={vacation}
+          workSchedule={workSchedule}
+          holidays={holidays}
           onUpdate={onUpdate}
           onDelete={onDelete}
         />
