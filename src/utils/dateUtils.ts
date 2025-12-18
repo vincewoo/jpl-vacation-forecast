@@ -39,17 +39,25 @@ export const getWeeksInRange = (startDate: Date, endDate: Date): Date[] => {
 };
 
 /**
- * Format date as YYYY-MM-DD
+ * Format date as YYYY-MM-DD using local time
  */
 export const formatDate = (date: Date): string => {
-  return date.toISOString().split('T')[0] ?? '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
 };
 
 /**
- * Parse ISO date string to Date object
+ * Parse ISO date string (YYYY-MM-DD) to Date object in local time
  */
 export const parseDate = (dateString: string): Date => {
-  return new Date(dateString);
+  const [year, month, day] = dateString.split('-').map(Number);
+  // Ensure we have valid numbers
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error(`Invalid date string: ${dateString}`);
+  }
+  return new Date(year, month - 1, day);
 };
 
 /**
