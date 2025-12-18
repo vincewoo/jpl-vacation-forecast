@@ -1,4 +1,4 @@
-import { RDOPattern, WorkSchedule, Holiday } from '../types';
+import { WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
 import { getDatesInRange, parseDate } from './dateUtils';
 
@@ -14,7 +14,7 @@ export const isWeekend = (date: Date): boolean => {
  * Check if a Friday is an RDO based on the pattern
  * Uses ISO week numbering for consistency
  */
-export const isRDOFriday = (date: Date, rdoPattern: RDOPattern): boolean => {
+export const isRDOFriday = (date: Date, rdoPattern: string): boolean => {
   if (date.getDay() !== 5) return false; // Not a Friday
 
   // Get ISO week number (week starts on Monday)
@@ -64,7 +64,7 @@ export const getWorkHoursForDay = (
 export const getRDODatesInRange = (
   startDate: Date,
   endDate: Date,
-  rdoPattern: RDOPattern
+  rdoPattern: string
 ): Date[] => {
   const rdoDates: Date[] = [];
   const currentDate = new Date(startDate);

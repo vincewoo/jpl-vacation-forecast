@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, ScheduleType, RDOPattern } from '../../types';
+import { UserProfile, ScheduleType } from '../../types';
 import './UserInputForm.css';
 
 interface UserInputFormProps {
@@ -11,7 +11,6 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit }) => {
   const [currentBalance, setCurrentBalance] = useState('');
   const [balanceAsOfDate, setBalanceAsOfDate] = useState('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('5/40');
-  const [rdoPattern, setRDOPattern] = useState<RDOPattern>('even-fridays');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +21,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit }) => {
       balanceAsOfDate,
       workSchedule: {
         type: scheduleType,
-        rdoPattern: scheduleType === '9/80' ? rdoPattern : undefined,
+        rdoPattern: scheduleType === '9/80' ? 'odd-fridays' : undefined,
       },
     };
 
@@ -98,35 +97,6 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit }) => {
             </label>
           </div>
         </div>
-
-        {scheduleType === '9/80' && (
-          <div className="form-group">
-            <label>RDO Pattern (Regular Day Off)</label>
-            <div className="radio-group">
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="rdoPattern"
-                  value="even-fridays"
-                  checked={rdoPattern === 'even-fridays'}
-                  onChange={() => setRDOPattern('even-fridays')}
-                />
-                <span>Even Week Fridays Off</span>
-              </label>
-              <label className="radio-label">
-                <input
-                  type="radio"
-                  name="rdoPattern"
-                  value="odd-fridays"
-                  checked={rdoPattern === 'odd-fridays'}
-                  onChange={() => setRDOPattern('odd-fridays')}
-                />
-                <span>Odd Week Fridays Off</span>
-              </label>
-            </div>
-            <small>ISO week numbering: Week 1 contains the first Thursday of the year</small>
-          </div>
-        )}
 
         <button type="submit" className="submit-button">
           Start Forecasting

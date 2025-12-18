@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import {
   UserProfile,
   PlannedVacation,
@@ -25,6 +25,23 @@ export const useVacationCalculator = () => {
     'jpl-vacation-holidays',
     []
   );
+
+  // Migration: Ensure all 9/80 users are on "odd-fridays" pattern
+  useEffect(() => {
+    if (
+      userProfile &&
+      userProfile.workSchedule.type === '9/80' &&
+      userProfile.workSchedule.rdoPattern === 'even-fridays'
+    ) {
+      setUserProfile({
+        ...userProfile,
+        workSchedule: {
+          ...userProfile.workSchedule,
+          rdoPattern: 'odd-fridays',
+        },
+      });
+    }
+  }, [userProfile, setUserProfile]);
 
   // Calculate start and end dates for the forecast period
   const forecastPeriod = useMemo(() => {
