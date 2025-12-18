@@ -1,0 +1,32 @@
+.sync-status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(76, 175, 80, 0.1);
+  border: 1px solid rgba(76, 175, 80, 0.3);
+  border-radius: 16px;
+  font-size: 0.85rem;
+  color: #2e7d32;
+  cursor: default;
+}
+
+.sync-status-indicator .sync-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.sync-status-indicator .sync-text {
+  font-weight: 500;
+}
+
+/* Responsive - hide text on mobile */
+@media (max-width: 768px) {
+  .sync-status-indicator .sync-text {
+    display: none;
+  }
+
+  .sync-status-indicator {
+    padding: 6px 8px;
+  }
+}

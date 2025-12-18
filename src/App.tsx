@@ -4,6 +4,8 @@ import { useHolidays } from './hooks/useHolidays';
 import UserInputForm from './components/UserInputForm/UserInputForm';
 import CalendarView from './components/Calendar/CalendarView';
 import CalendarLegend from './components/Calendar/CalendarLegend';
+import { CloudSyncSettings } from './components/CloudSync/CloudSyncSettings';
+import { SyncStatusIndicator } from './components/CloudSync/SyncStatusIndicator';
 import './App.css';
 
 const App: React.FC = () => {
@@ -74,16 +76,18 @@ const App: React.FC = () => {
   return (
     <div className="app">
       <header className="app-header">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
           <h1>JPL Vacation Forecast</h1>
-          <button
-            onClick={toggleTheme}
-            className="reset-button"
-            style={{ marginLeft: 'auto' }}
-            aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-          >
-            {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
-          </button>
+          <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto', alignItems: 'center' }}>
+            <SyncStatusIndicator />
+            <button
+              onClick={toggleTheme}
+              className="reset-button"
+              aria-label={isDarkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            >
+              {isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode'}
+            </button>
+          </div>
         </div>
       </header>
 
@@ -100,6 +104,8 @@ const App: React.FC = () => {
                 Reset Profile
               </button>
             </div>
+
+            <CloudSyncSettings />
 
             <CalendarLegend />
 

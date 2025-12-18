@@ -1,7 +1,13 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { storageService } from '../services/storageService';
 
 /**
- * Custom hook for localStorage persistence with TypeScript support
+ * Custom hook for localStorage persistence with optional cloud sync support
+ *
+ * This hook now supports hybrid storage:
+ * - By default, uses localStorage (same as before)
+ * - When user enables cloud sync, automatically syncs to Firebase
+ * - Listens for real-time updates from other devices
  */
 export function useLocalStorage<T>(
   key: string,
@@ -18,16 +24,29 @@ export function useLocalStorage<T>(
     }
   });
 
+  // Subscribe to storage changes (from Firebase real-time sync)
+  useEffect(() => {
+    const unsubscribe = storageService.subscribe<T>(key, (newValue) => {
+      setStoredValue(newValue);
+    });
+
+    return unsubscribe;
+  }, [key]);
+
   // Return a wrapped version of useState's setter function that
-  // persists the new value to localStorage
+  // persists the new value to storage (localStorage + optional cloud sync)
   const setValue = (value: T | ((val: T) => T)) => {
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
       setStoredValue(valueToStore);
-      window.localStorage.setItem(key, JSON.stringify(valueToStore));
+
+      // Use storage service which handles both localStorage and cloud sync
+      storageService.set(key, valueToStore).catch(error => {
+        console.error(`Error saving ${key}:`, error);
+      });
     } catch (error) {
-      console.error(`Error saving ${key} to localStorage:`, error);
+      console.error(`Error saving ${key}:`, error);
     }
   };
 

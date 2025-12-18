@@ -68,6 +68,38 @@ npm run build
 npm run preview  # Preview the production build
 ```
 
+### Deploying to GitHub Pages
+
+This project is configured to deploy to GitHub Pages using the `gh-pages` package.
+
+1. **Prerequisites**:
+   - Ensure you have a GitHub repository set up for this project
+   - The `homepage` field in [package.json](package.json) should match your GitHub Pages URL:
+     ```json
+     "homepage": "https://yourusername.github.io/jpl-vacation-forecast"
+     ```
+
+2. **Deploy**:
+   ```bash
+   npm run deploy
+   ```
+
+   This command will:
+   - Build the production bundle (`npm run build`)
+   - Deploy the `dist` folder to the `gh-pages` branch
+   - Push to GitHub
+
+3. **Configure GitHub Pages** (first-time setup):
+   - Go to your repository settings on GitHub
+   - Navigate to **Settings > Pages**
+   - Under "Source", select the `gh-pages` branch
+   - Click Save
+   - Your site will be live at the URL specified in `homepage` within a few minutes
+
+4. **Subsequent deployments**:
+   - Simply run `npm run deploy` to update the live site
+   - Changes will be live within a few minutes
+
 ## Usage
 
 ### Initial Setup

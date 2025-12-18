@@ -1,0 +1,146 @@
+.cloud-sync-settings {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.cloud-sync-settings.loading {
+  text-align: center;
+  padding: 40px;
+  color: #666;
+}
+
+.sync-status,
+.sync-promo {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+.sync-icon {
+  font-size: 2.5rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.sync-info {
+  flex: 1;
+}
+
+.sync-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.sync-email {
+  font-size: 0.9rem;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.sync-description {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+  margin-bottom: 12px;
+}
+
+.sync-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 12px 0 0 0;
+}
+
+.sync-benefits li {
+  padding: 6px 0;
+  padding-left: 24px;
+  position: relative;
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.sync-benefits li::before {
+  content: '✓';
+  position: absolute;
+  left: 0;
+  color: #4CAF50;
+  font-weight: bold;
+}
+
+.sign-in-button,
+.sign-out-button {
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  max-width: 300px;
+}
+
+.sign-in-button {
+  background: #4285F4;
+  color: white;
+}
+
+.sign-in-button:hover {
+  background: #357AE8;
+  box-shadow: 0 2px 8px rgba(66, 133, 244, 0.3);
+}
+
+.sign-out-button {
+  background: #f5f5f5;
+  color: #666;
+  border: 1px solid #ddd;
+}
+
+.sign-out-button:hover {
+  background: #e0e0e0;
+  border-color: #ccc;
+}
+
+.error-message {
+  margin-top: 12px;
+  padding: 12px;
+  background: #ffebee;
+  border: 1px solid #ef5350;
+  border-radius: 4px;
+  color: #c62828;
+  font-size: 0.9rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .cloud-sync-settings {
+    padding: 16px;
+    margin: 16px 0;
+  }
+
+  .sync-status,
+  .sync-promo {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .sync-icon {
+    font-size: 3rem;
+  }
+
+  .sync-benefits li {
+    text-align: left;
+  }
+
+  .sign-in-button,
+  .sign-out-button {
+    max-width: 100%;
+  }
+}
