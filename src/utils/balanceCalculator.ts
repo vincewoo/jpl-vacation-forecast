@@ -13,7 +13,7 @@ import {
   formatDate
 } from './dateUtils';
 import { calculateAccrualForRange } from './accrualCalculator';
-import { getRDODatesInRange, getVacationHours } from './workScheduleUtils';
+import { getRDODatesInRange, calculateVacationHoursForRange, getVacationHours } from './workScheduleUtils';
 
 // JPL vacation balance limits
 export const MAX_VACATION_BALANCE = 320; // Maximum accrual cap in hours
@@ -68,7 +68,19 @@ export const calculateWeeklyBalances = (
 
     // Calculate total hours used this week (dynamically calculated from vacation dates)
     const used = weekVacations.reduce((sum, v) => {
-      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
+      const vacStart = parseDate(v.startDate);
+      const vacEnd = parseDate(v.endDate);
+
+      // Calculate intersection of vacation and current week
+      const effectiveStart = vacStart > weekStart ? vacStart : weekStart;
+      const effectiveEnd = vacEnd < weekEnd ? vacEnd : weekEnd;
+
+      const vacationHours = calculateVacationHoursForRange(
+        effectiveStart,
+        effectiveEnd,
+        userProfile.workSchedule,
+        holidays
+      );
       return sum + vacationHours;
     }, 0);
 
