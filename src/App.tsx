@@ -6,6 +6,7 @@ import CalendarView from './components/Calendar/CalendarView';
 import CalendarLegend from './components/Calendar/CalendarLegend';
 import { CloudSyncSettings } from './components/CloudSync/CloudSyncSettings';
 import { SyncStatusIndicator } from './components/CloudSync/SyncStatusIndicator';
+import holidayData from './data/holidays.json';
 import './App.css';
 
 const App: React.FC = () => {
@@ -59,9 +60,40 @@ const App: React.FC = () => {
   useEffect(() => {
     if (!userProfile || defaultHolidays.length === 0) return;
 
+    const HOLIDAY_VERSION_KEY = 'jpl-vacation-holidays-version';
+    const storedVersion = localStorage.getItem(HOLIDAY_VERSION_KEY);
+    const currentVersion = holidayData.version;
+
+    const updateHolidays = () => {
+      setHolidays(defaultHolidays);
+      localStorage.setItem(HOLIDAY_VERSION_KEY, currentVersion);
+    };
+
     // Initialize holidays if none exist
     if (holidays.length === 0) {
-      setHolidays(defaultHolidays);
+      updateHolidays();
+      return;
+    }
+
+    // Check version match
+    if (storedVersion !== currentVersion) {
+      console.log(`Holiday version mismatch (stored: ${storedVersion}, current: ${currentVersion}). Updating...`);
+      updateHolidays();
+      return;
+    }
+
+    // Check if schedule changed (by comparing hours of first holiday if exists)
+    // This handles cases where user changes schedule but version is same
+    // We compare cached holidays vs defaultHolidays (which are computed from current schedule)
+    const hasDifferentHours = holidays.length !== defaultHolidays.length ||
+      holidays.some((h, i) => {
+        const defaultH = defaultHolidays[i];
+        return !defaultH || h.date !== defaultH.date || h.hours !== defaultH.hours;
+      });
+
+    if (hasDifferentHours) {
+      console.log('Work schedule mismatch detected in holidays. Updating...');
+      updateHolidays();
       return;
     }
 
@@ -72,7 +104,7 @@ const App: React.FC = () => {
     );
 
     if (!hasMultiYearHolidays) {
-      setHolidays(defaultHolidays);
+      updateHolidays();
     }
   }, [userProfile, holidays, defaultHolidays, setHolidays]);
 
