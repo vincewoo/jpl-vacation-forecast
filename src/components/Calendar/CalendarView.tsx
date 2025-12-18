@@ -9,7 +9,7 @@ import {
   UserProfile,
   DayType,
 } from '../../types';
-import { formatDate } from '../../utils/dateUtils';
+import { formatDate, parseDate } from '../../utils/dateUtils';
 import { mapWeeklyBalancesToDays } from '../../utils/calendarDataMapper';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import CalendarTile from './CalendarTile';
@@ -83,8 +83,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const lastWeek = weeklyBalances[weeklyBalances.length - 1]!;
 
     return {
-      start: new Date(firstWeek.weekStartDate),
-      end: new Date(lastWeek.weekEndDate),
+      start: parseDate(firstWeek.weekStartDate),
+      end: parseDate(lastWeek.weekEndDate),
     };
   }, [weeklyBalances]);
 
