@@ -1,11 +1,16 @@
 import { useAuth } from '../../hooks/useAuth';
 import './CloudSyncSettings.css';
 
+interface CloudSyncSettingsProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
 /**
  * Component for managing cloud sync settings
  * Allows users to enable/disable cloud sync with Google authentication
  */
-export function CloudSyncSettings() {
+export function CloudSyncSettings({ isOpen = true, onClose }: CloudSyncSettingsProps) {
   const { user, loading, error, isFirebaseAvailable, signInWithGoogle, signOut } = useAuth();
 
   // If Firebase is not configured, don't show anything
@@ -13,9 +18,19 @@ export function CloudSyncSettings() {
     return null;
   }
 
+  // If panel is closed, don't show anything
+  if (!isOpen) {
+    return null;
+  }
+
   if (loading) {
     return (
       <div className="cloud-sync-settings loading">
+        {onClose && (
+          <button onClick={onClose} className="close-button" aria-label="Close">
+            ✕
+          </button>
+        )}
         <p>Loading...</p>
       </div>
     );
@@ -25,6 +40,11 @@ export function CloudSyncSettings() {
     // User is signed in - show sync status
     return (
       <div className="cloud-sync-settings signed-in">
+        {onClose && (
+          <button onClick={onClose} className="close-button" aria-label="Close">
+            ✕
+          </button>
+        )}
         <div className="sync-status">
           <div className="sync-icon">☁️</div>
           <div className="sync-info">
@@ -46,6 +66,11 @@ export function CloudSyncSettings() {
   // User is not signed in - show enable button
   return (
     <div className="cloud-sync-settings signed-out">
+      {onClose && (
+        <button onClick={onClose} className="close-button" aria-label="Close">
+          ✕
+        </button>
+      )}
       <div className="sync-promo">
         <div className="sync-icon">☁️</div>
         <div className="sync-info">

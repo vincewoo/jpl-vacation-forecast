@@ -23,7 +23,7 @@ const CalendarLegend: React.FC = () => {
         </div>
         <div className="legend-item">
           <span className="legend-box balance-positive"></span>
-          <span className="legend-label">Balance (on Saturdays)</span>
+          <span className="legend-label">Balance (on Sundays)</span>
         </div>
       </div>
     </div>

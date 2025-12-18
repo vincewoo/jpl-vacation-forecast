@@ -35,6 +35,9 @@ const App: React.FC = () => {
     return savedTheme === 'dark';
   });
 
+  // CloudSync panel visibility state - default to true so users see the cloud sync option
+  const [isCloudSyncPanelOpen, setIsCloudSyncPanelOpen] = useState(true);
+
   // Apply theme class to document root
   useEffect(() => {
     const root = document.documentElement;
@@ -79,7 +82,7 @@ const App: React.FC = () => {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px' }}>
           <h1>JPL Vacation Forecast</h1>
           <div style={{ display: 'flex', gap: '12px', marginLeft: 'auto', alignItems: 'center' }}>
-            <SyncStatusIndicator />
+            <SyncStatusIndicator onClick={() => setIsCloudSyncPanelOpen(!isCloudSyncPanelOpen)} />
             <button
               onClick={toggleTheme}
               className="reset-button"
@@ -105,7 +108,10 @@ const App: React.FC = () => {
               </button>
             </div>
 
-            <CloudSyncSettings />
+            <CloudSyncSettings
+              isOpen={isCloudSyncPanelOpen}
+              onClose={() => setIsCloudSyncPanelOpen(false)}
+            />
 
             <CalendarLegend />
 

@@ -8,7 +8,25 @@
   border-radius: 16px;
   font-size: 0.85rem;
   color: #2e7d32;
-  cursor: default;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.sync-status-indicator:hover {
+  background: rgba(76, 175, 80, 0.2);
+  border-color: rgba(76, 175, 80, 0.5);
+  transform: translateY(-1px);
+}
+
+:root.dark .sync-status-indicator {
+  background: rgba(76, 175, 80, 0.15);
+  border-color: rgba(76, 175, 80, 0.4);
+  color: var(--success-light);
+}
+
+:root.dark .sync-status-indicator:hover {
+  background: rgba(76, 175, 80, 0.25);
+  border-color: rgba(76, 175, 80, 0.6);
 }
 
 .sync-status-indicator .sync-icon {
