@@ -52,6 +52,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   const [error, setError] = useState('');
   const [isDoubleView, setIsDoubleView] = useState(window.innerWidth >= 768);
   const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
+  const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
 
   // Handle window resize for responsive double view
   useEffect(() => {
@@ -336,25 +337,27 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   return (
     <div className="calendar-view">
-      {selectionMode === 'selecting' && (
-        <div className="selection-banner">
-          <span>
-            Selecting vacation: Click the end date or{' '}
-            <button onClick={cancelSelection} className="cancel-link">
-              Cancel
-            </button>
-          </span>
-        </div>
-      )}
+      <div className="banner-container">
+        {selectionMode === 'selecting' && (
+          <div className="selection-banner">
+            <span>
+              Selecting vacation: Click the end date or{' '}
+              <button onClick={cancelSelection} className="cancel-link">
+                Cancel
+              </button>
+            </span>
+          </div>
+        )}
 
-      {error && (
-        <div className="error-banner">
-          {error}
-          <button onClick={() => setError('')} className="close-error">
-            ×
-          </button>
-        </div>
-      )}
+        {error && (
+          <div className="error-banner">
+            {error}
+            <button onClick={() => setError('')} className="close-error">
+              ×
+            </button>
+          </div>
+        )}
+      </div>
 
       <div className="calendar-header-controls">
         <button
@@ -366,23 +369,42 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         </button>
       </div>
 
-      <Calendar
-        showDoubleView={isDoubleView}
-        showNeighboringMonth={true}
-        selectRange={false}
-        tileContent={renderTileContent}
-        tileClassName={getTileClassName}
-        onClickDay={handleDayClick}
-        minDetail="month"
-        maxDetail="month"
-        locale="en-US"
-        activeStartDate={activeStartDate}
-        onActiveStartDateChange={({ activeStartDate }: { activeStartDate: Date | null }) => {
-          if (activeStartDate) {
-            setActiveStartDate(activeStartDate);
-          }
-        }}
-      />
+      <div className={`calendar-container ${transitionDirection ? `slide-${transitionDirection}` : ''}`}>
+        <Calendar
+          showDoubleView={isDoubleView}
+          showNeighboringMonth={true}
+          selectRange={false}
+          tileContent={renderTileContent}
+          tileClassName={getTileClassName}
+          onClickDay={handleDayClick}
+          minDetail="month"
+          maxDetail="month"
+          locale="en-US"
+          activeStartDate={activeStartDate}
+          onActiveStartDateChange={({ activeStartDate: newDate }: { activeStartDate: Date | null }) => {
+            if (newDate) {
+              // Determine transition direction
+              const currentMonth = activeStartDate.getMonth();
+              const currentYear = activeStartDate.getFullYear();
+              const newMonth = newDate.getMonth();
+              const newYear = newDate.getFullYear();
+
+              if (newYear > currentYear || (newYear === currentYear && newMonth > currentMonth)) {
+                setTransitionDirection('forward');
+              } else if (newYear < currentYear || (newYear === currentYear && newMonth < currentMonth)) {
+                setTransitionDirection('backward');
+              } else {
+                setTransitionDirection(null);
+              }
+
+              setActiveStartDate(newDate);
+
+              // Clear transition direction after animation completes
+              setTimeout(() => setTransitionDirection(null), 600);
+            }
+          }}
+        />
+      </div>
 
       <VacationEditModal
         vacation={editingVacation}
