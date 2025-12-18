@@ -4,7 +4,7 @@
   "holidays": {
     "2025": [
       { "name": "Christmas", "date": "2025-12-25", "type": "federal" },
-      { "name": "JPL Floating", "date": "20265-12-24", "type": "jpl" },
+      { "name": "JPL Floating", "date": "2025-12-24", "type": "jpl" },
       { "name": "JPL Floating", "date": "2025-12-26", "type": "jpl" }
     ],
     "2026": [
