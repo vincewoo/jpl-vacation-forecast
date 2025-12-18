@@ -1,0 +1,213 @@
+.balance-tracker {
+  background: white;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.balance-tracker-header {
+  margin-bottom: 1.5rem;
+}
+
+.balance-tracker-header h2 {
+  color: #333;
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.annual-summaries {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.annual-summary-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+}
+
+.annual-summary-card h3 {
+  margin: 0 0 1rem 0;
+  font-size: 1.25rem;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.summary-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.summary-label {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  margin-bottom: 0.25rem;
+}
+
+.summary-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.weekly-balance-section {
+  margin-top: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.section-header h3 {
+  color: #333;
+  font-size: 1.25rem;
+  margin: 0;
+}
+
+.toggle-button {
+  padding: 0.5rem 1rem;
+  background-color: #fff;
+  color: #0066cc;
+  border: 1px solid #0066cc;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.toggle-button:hover {
+  background-color: #0066cc;
+  color: white;
+}
+
+.table-container {
+  overflow-x: auto;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+}
+
+.weekly-balance-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.weekly-balance-table thead {
+  background-color: #f5f5f5;
+}
+
+.weekly-balance-table th {
+  padding: 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #666;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.weekly-balance-table td {
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.weekly-balance-table tbody tr:hover {
+  background-color: #fafafa;
+}
+
+.weekly-balance-table tbody tr.current-week {
+  background-color: #e3f2fd;
+}
+
+.weekly-balance-table tbody tr.current-week:hover {
+  background-color: #d1e8fa;
+}
+
+.weekly-balance-table tbody tr.negative-balance {
+  background-color: #ffebee;
+}
+
+.weekly-balance-table tbody tr.negative-balance:hover {
+  background-color: #ffcdd2;
+}
+
+.week-column {
+  font-weight: 500;
+  min-width: 200px;
+}
+
+.current-label {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.125rem 0.5rem;
+  background-color: #0066cc;
+  color: white;
+  font-size: 0.75rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.number-column {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  min-width: 100px;
+}
+
+.number-column.positive {
+  color: #2e7d32;
+}
+
+.number-column.negative {
+  color: #d32f2f;
+}
+
+.number-column.ending-balance {
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.text-negative {
+  color: #d32f2f !important;
+}
+
+.text-positive {
+  color: #2e7d32;
+}
+
+.showing-info {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+  font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+  .table-container {
+    font-size: 0.75rem;
+  }
+
+  .weekly-balance-table th,
+  .weekly-balance-table td {
+    padding: 0.5rem;
+  }
+
+  .week-column {
+    min-width: 150px;
+  }
+
+  .number-column {
+    min-width: 80px;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
