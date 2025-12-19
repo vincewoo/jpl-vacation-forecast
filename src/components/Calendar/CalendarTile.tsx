@@ -26,9 +26,14 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
     <div className="calendar-tile-content">
       {/* Day indicators */}
       <div className="day-indicators">
+        {dayInfo.isPersonalDayStart && (
+          <span className="indicator personal-day" title="Personal Day Applied">
+            P
+          </span>
+        )}
         {dayInfo.isInVacation && (
           <span className="indicator vacation" title="Planned Vacation">
-            {dayInfo.isPersonalDayStart ? 'P' : 'V'}
+            V
           </span>
         )}
         {dayInfo.isHoliday && (

@@ -380,6 +380,11 @@
   background-color: var(--calendar-rdo);
 }
 
+.indicator.personal-day {
+  background-color: #4fc3f7; /* Light Blue */
+  color: #000; /* Ensure text is readable on light blue */
+}
+
 /* Balance Display */
 .balance-display {
   position: absolute;
