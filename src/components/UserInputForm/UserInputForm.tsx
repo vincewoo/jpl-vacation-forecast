@@ -4,9 +4,10 @@ import './UserInputForm.css';
 
 interface UserInputFormProps {
   onSubmit: (profile: UserProfile) => void;
+  onBack?: () => void;
 }
 
-const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit }) => {
+const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
   const [startDate, setStartDate] = useState('');
   const [currentBalance, setCurrentBalance] = useState('');
   const [balanceAsOfDate, setBalanceAsOfDate] = useState('');
@@ -30,6 +31,11 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit }) => {
 
   return (
     <div className="user-input-form-container">
+      {onBack && (
+        <button onClick={onBack} className="back-button" type="button">
+          ← Back
+        </button>
+      )}
       <h2>Welcome to JPL Vacation Forecast</h2>
       <p>Let's set up your vacation tracking profile</p>
 

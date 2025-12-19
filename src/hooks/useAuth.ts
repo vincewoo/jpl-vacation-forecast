@@ -14,6 +14,7 @@ export interface UseAuthResult {
   loading: boolean;
   error: string | null;
   isFirebaseAvailable: boolean;
+  initialSyncComplete: boolean;
   signInWithGoogle: () => Promise<void>;
   signOut: () => Promise<void>;
 }
@@ -31,6 +32,7 @@ export function useAuth(): UseAuthResult {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFirebaseAvailable] = useState(isFirebaseConfigured());
+  const [initialSyncComplete, setInitialSyncComplete] = useState(false);
 
   // Listen to auth state changes
   useEffect(() => {
@@ -65,10 +67,14 @@ export function useAuth(): UseAuthResult {
           } catch (syncErr) {
             console.error('Error syncing to cloud:', syncErr);
           }
+        } finally {
+          // Mark sync as complete regardless of success/failure
+          setInitialSyncComplete(true);
         }
       } else {
         // User signed out - back to localStorage only
         storageService.setMode('localStorage');
+        setInitialSyncComplete(true);
       }
     });
 
@@ -151,6 +157,7 @@ export function useAuth(): UseAuthResult {
     loading,
     error,
     isFirebaseAvailable,
+    initialSyncComplete,
     signInWithGoogle,
     signOut,
   };

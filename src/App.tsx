@@ -1,11 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useVacationCalculator } from './hooks/useVacationCalculator';
 import { useHolidays } from './hooks/useHolidays';
+import { useAuth } from './hooks/useAuth';
 import UserInputForm from './components/UserInputForm/UserInputForm';
 import CalendarView from './components/Calendar/CalendarView';
 import CalendarLegend from './components/Calendar/CalendarLegend';
 import { CloudSyncSettings } from './components/CloudSync/CloudSyncSettings';
 import { SyncStatusIndicator } from './components/CloudSync/SyncStatusIndicator';
+import WelcomeScreen from './components/WelcomeScreen/WelcomeScreen';
+import LoadingScreen from './components/LoadingScreen/LoadingScreen';
 import holidayData from './data/holidays.json';
 import './App.css';
 
@@ -30,6 +33,9 @@ const App: React.FC = () => {
     forecastPeriod.endDate
   );
 
+  // Authentication state
+  const { user, loading: authLoading, initialSyncComplete } = useAuth();
+
   // Theme state management
   const [isDarkMode, setIsDarkMode] = useState(() => {
     const savedTheme = localStorage.getItem('theme');
@@ -38,6 +44,9 @@ const App: React.FC = () => {
 
   // CloudSync panel visibility state - default to true so users see the cloud sync option
   const [isCloudSyncPanelOpen, setIsCloudSyncPanelOpen] = useState(true);
+
+  // User flow state - controls whether to show UserInputForm
+  const [showUserForm, setShowUserForm] = useState(false);
 
   // Apply theme class to document root
   useEffect(() => {
@@ -108,6 +117,76 @@ const App: React.FC = () => {
     }
   }, [userProfile, holidays, defaultHolidays, setHolidays]);
 
+  // Determine what to render based on auth state and user profile
+  const renderMainContent = () => {
+    // Show loading while checking authentication
+    if (authLoading) {
+      return <LoadingScreen message="Checking authentication..." />;
+    }
+
+    // User has profile - show dashboard
+    if (userProfile) {
+      return (
+        <div className="dashboard">
+          <div className="dashboard-header">
+            <button
+              onClick={() => setUserProfile(null)}
+              className="reset-button"
+            >
+              Reset Profile
+            </button>
+          </div>
+
+          <CloudSyncSettings
+            isOpen={isCloudSyncPanelOpen}
+            onClose={() => setIsCloudSyncPanelOpen(false)}
+          />
+
+          <CalendarLegend />
+
+          <CalendarView
+            weeklyBalances={weeklyBalances}
+            plannedVacations={plannedVacations}
+            holidays={holidays}
+            userProfile={userProfile}
+            onAddVacation={addPlannedVacation}
+            onUpdateVacation={updatePlannedVacation}
+            onDeleteVacation={deletePlannedVacation}
+            canAffordVacation={canAffordVacation}
+          />
+        </div>
+      );
+    }
+
+    // User is signed in but no profile yet
+    if (user && !userProfile) {
+      // If sync is still in progress, show loading
+      if (!initialSyncComplete) {
+        return <LoadingScreen message="Loading your data..." />;
+      }
+      // Sync complete but no profile found - show form
+      return (
+        <UserInputForm
+          onSubmit={setUserProfile}
+          onBack={() => setShowUserForm(false)}
+        />
+      );
+    }
+
+    // Show user input form if user chose to be a new user
+    if (showUserForm) {
+      return (
+        <UserInputForm
+          onSubmit={setUserProfile}
+          onBack={() => setShowUserForm(false)}
+        />
+      );
+    }
+
+    // No profile, not signed in - show welcome screen
+    return <WelcomeScreen onNewUser={() => setShowUserForm(true)} />;
+  };
+
   return (
     <div className="app">
       <header className="app-header">
@@ -127,38 +206,7 @@ const App: React.FC = () => {
       </header>
 
       <main className="app-main">
-        {!userProfile ? (
-          <UserInputForm onSubmit={setUserProfile} />
-        ) : (
-          <div className="dashboard">
-            <div className="dashboard-header">
-              <button
-                onClick={() => setUserProfile(null)}
-                className="reset-button"
-              >
-                Reset Profile
-              </button>
-            </div>
-
-            <CloudSyncSettings
-              isOpen={isCloudSyncPanelOpen}
-              onClose={() => setIsCloudSyncPanelOpen(false)}
-            />
-
-            <CalendarLegend />
-
-            <CalendarView
-              weeklyBalances={weeklyBalances}
-              plannedVacations={plannedVacations}
-              holidays={holidays}
-              userProfile={userProfile}
-              onAddVacation={addPlannedVacation}
-              onUpdateVacation={updatePlannedVacation}
-              onDeleteVacation={deletePlannedVacation}
-              canAffordVacation={canAffordVacation}
-            />
-          </div>
-        )}
+        {renderMainContent()}
       </main>
     </div>
   );
