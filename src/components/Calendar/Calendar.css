@@ -381,8 +381,9 @@
 }
 
 .indicator.personal-day {
-  background-color: #4fc3f7; /* Light Blue */
-  color: #000; /* Ensure text is readable on light blue */
+  background-color: var(--calendar-personal);
+  color: var(--text-inverse);
+  font-weight: 800; /* Extra bold to ensure readability */
 }
 
 /* Balance Display */
