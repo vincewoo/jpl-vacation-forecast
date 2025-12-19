@@ -12,6 +12,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
   const [currentBalance, setCurrentBalance] = useState('');
   const [balanceAsOfDate, setBalanceAsOfDate] = useState('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('5/40');
+  const [personalDayUsedInStartYear, setPersonalDayUsedInStartYear] = useState(false);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,6 +25,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
         type: scheduleType,
         rdoPattern: scheduleType === '9/80' ? 'odd-fridays' : undefined,
       },
+      personalDayUsedInStartYear,
     };
 
     onSubmit(profile);
@@ -76,6 +78,20 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             required
           />
           <small>When was this balance taken? Should be the start of a week (Sunday)</small>
+        </div>
+
+        <div className="form-group checkbox-group">
+          <label>
+            <input
+              type="checkbox"
+              checked={personalDayUsedInStartYear}
+              onChange={(e) => setPersonalDayUsedInStartYear(e.target.checked)}
+            />
+            <span>I already used my Personal Day this year</span>
+          </label>
+          <small>
+            Check this if you took a personal day before {balanceAsOfDate || 'your balance date'}
+          </small>
         </div>
 
         <div className="form-group">

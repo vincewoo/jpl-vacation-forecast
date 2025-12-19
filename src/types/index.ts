@@ -12,6 +12,7 @@ export interface UserProfile {
   currentBalance: number; // in hours
   balanceAsOfDate: string; // ISO date string - when the current balance was taken (should be start of a week)
   workSchedule: WorkSchedule;
+  personalDayUsedInStartYear?: boolean; // Whether personal day was used before/at balanceAsOfDate
 }
 
 // Accrual Information

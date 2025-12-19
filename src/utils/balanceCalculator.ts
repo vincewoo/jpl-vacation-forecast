@@ -42,6 +42,12 @@ export const calculateWeeklyBalances = (
       .map(v => parseDate(v.startDate).getFullYear())
   );
 
+  // Add the start year if user indicated they used personal day before balance date
+  if (userProfile.personalDayUsedInStartYear) {
+    const balanceYear = parseDate(userProfile.balanceAsOfDate).getFullYear();
+    yearsWithPersonalDay.add(balanceYear);
+  }
+
   for (const weekStart of weeks) {
     const weekEnd = getWeekEnd(weekStart);
 
