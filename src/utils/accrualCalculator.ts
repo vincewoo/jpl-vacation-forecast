@@ -42,6 +42,7 @@ export const calculateMonthlyAccrual = (
 /**
  * Calculate accrual for a date range using a consistent weekly rate
  * For a full week (7 days), this ensures consistent accrual regardless of month boundaries
+ * If an anniversary occurs within the range, the higher rate applies to the entire range
  */
 export const calculateAccrualForRange = (
   startDate: Date,
@@ -61,9 +62,13 @@ export const calculateAccrualForRange = (
     (normalizedEnd.getTime() - normalizedStart.getTime()) / (1000 * 60 * 60 * 24)
   ) + 1;
 
-  // Get the monthly accrual rate based on years of service
-  // Use the start of the range to determine the accrual tier
-  const yearsOfService = calculateYearsOfService(startDate, rangeStart);
+  // Check years of service at both start and end of range
+  const yearsAtStart = calculateYearsOfService(startDate, rangeStart);
+  const yearsAtEnd = calculateYearsOfService(startDate, rangeEnd);
+
+  // If an anniversary occurs within this range, use the higher rate for the entire range
+  // This ensures that the week containing an anniversary milestone gets the new rate
+  const yearsOfService = Math.max(yearsAtStart, yearsAtEnd);
   const monthlyRate = getAccrualRate(yearsOfService);
 
   // Convert monthly rate to weekly rate
