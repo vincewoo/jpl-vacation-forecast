@@ -17,11 +17,6 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
 }) => {
   if (!dayInfo) return null;
 
-  // Debug: log if this is a Sunday with balance data
-  if (dayInfo.date.getDay() === 0) {
-    console.log('Sunday:', dayInfo.date.toISOString().split('T')[0], 'balance:', dayInfo.balance);
-  }
-
   return (
     <div className="calendar-tile-content">
       {/* Day indicators */}
