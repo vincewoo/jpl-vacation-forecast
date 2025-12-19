@@ -42,6 +42,7 @@
   --calendar-holiday: #f57c00;
   --calendar-rdo-bg: #bbdefb;
   --calendar-rdo: #1976d2;
+  --calendar-personal: #2e7d32;
   --calendar-weekend-bg: #eeeeee;
   --calendar-selection-bg: #c5e1a5;
   --calendar-selection: #4caf50;
@@ -115,6 +116,7 @@
   --calendar-holiday: #ffb74d;
   --calendar-rdo-bg: #0d2538;
   --calendar-rdo: #64b5f6;
+  --calendar-personal: #81c784;
   --calendar-weekend-bg: #1a1a1a;
   --calendar-selection-bg: #2a3d2a;
   --calendar-selection: #66bb6a;

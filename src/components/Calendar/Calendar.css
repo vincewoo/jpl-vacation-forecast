@@ -380,6 +380,12 @@
   background-color: var(--calendar-rdo);
 }
 
+.indicator.personal-day {
+  background-color: var(--calendar-personal);
+  color: var(--text-inverse);
+  font-weight: 800; /* Extra bold to ensure readability */
+}
+
 /* Balance Display */
 .balance-display {
   position: absolute;
