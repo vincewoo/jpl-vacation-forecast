@@ -3,30 +3,23 @@
   align-items: center;
   gap: 6px;
   padding: 6px 12px;
-  background: rgba(76, 175, 80, 0.1);
-  border: 1px solid rgba(76, 175, 80, 0.3);
+  background: var(--bg-secondary);
+  border: 1px solid var(--success);
   border-radius: 16px;
   font-size: 0.85rem;
-  color: #2e7d32;
+  color: var(--success);
   cursor: pointer;
   transition: all 0.2s;
 }
 
 .sync-status-indicator:hover {
-  background: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.5);
+  background: var(--balance-positive-bg);
+  border-color: var(--success-light);
   transform: translateY(-1px);
 }
 
-:root.dark .sync-status-indicator {
-  background: rgba(76, 175, 80, 0.15);
-  border-color: rgba(76, 175, 80, 0.4);
-  color: var(--success-light);
-}
-
 :root.dark .sync-status-indicator:hover {
-  background: rgba(76, 175, 80, 0.25);
-  border-color: rgba(76, 175, 80, 0.6);
+  border-color: var(--success);
 }
 
 .sync-status-indicator .sync-icon {

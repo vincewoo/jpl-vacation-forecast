@@ -24,8 +24,8 @@ export const useHolidays = (
     const startYear = start.getFullYear();
     const endYear = end.getFullYear();
 
-    // Load holidays from JSON for the year range
-    const holidayEntries = getHolidaysForYearRange(startYear, endYear);
+    // Load holidays from JSON for the year range, filtered by schedule type
+    const holidayEntries = getHolidaysForYearRange(startYear, endYear, workSchedule.type);
 
     // Enrich with work hours based on schedule
     return holidayEntries.map((holiday) => ({

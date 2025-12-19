@@ -26,6 +26,13 @@ export interface HolidayEntry {
   date: string; // ISO date string
   type?: 'federal' | 'jpl' | 'other';
   notes?: string;
+  /**
+   * Filter holidays by work schedule type.
+   * - 'All': Available to both 5/40 and 9/80 employees (default if not specified)
+   * - '5/40-only': Only for 5/40 employees
+   * - '9/80-only': Only for 9/80 employees
+   */
+  scheduleFilter?: 'All' | '5/40-only' | '9/80-only';
 }
 
 // Holiday Data Structure (from JSON file)
