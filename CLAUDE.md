@@ -7,15 +7,19 @@ This document captures key design decisions, architectural choices, and implemen
 ### Component Structure
 The application follows a hierarchical component structure:
 - **App.tsx**: Top-level state management and data flow orchestration
+- **WelcomeScreen**: Initial entry point for new or returning users
+- **LoadingScreen**: Shows while authentication/sync is in progress
 - **UserInputForm**: Initial profile setup and configuration
 - **VacationPlanner**: Vacation entry management (list view)
 - **CalendarView**: Visual calendar interface for vacation planning
 - **BalanceTracker**: Week-by-week balance forecasting and annual summaries
+- **CloudSync**: Optional Google sign-in for cross-device data synchronization
 
 ### State Management
 - **Local Storage**: All user data persists in browser localStorage for simplicity and privacy
-- **No Backend**: Completely client-side application - no server required
-- **Custom Hooks**: Business logic encapsulated in hooks (`useVacationCalculator`, `useHolidays`, `useLocalStorage`)
+- **Cloud Sync (Optional)**: Firebase integration for syncing data across devices via Google sign-in
+- **No Backend Required**: Completely client-side application with optional cloud sync
+- **Custom Hooks**: Business logic encapsulated in hooks (`useVacationCalculator`, `useHolidays`, `useLocalStorage`, `useAuth`)
 
 ## Critical Date Handling
 
@@ -53,17 +57,19 @@ export const parseDate = (dateStr: string): Date => {
 ## Work Schedule Implementation
 
 ### 9/80 Schedule RDO Pattern
-**Decision**: Use ISO week numbers to determine RDO Fridays.
+**Decision**: Use ISO week numbers to determine RDO Fridays, enforced to "odd-fridays" pattern for JPL.
 
 **Rationale**:
 - ISO weeks provide a consistent, internationally-recognized standard
 - Week numbering starts on Monday, which aligns well with the 9/80 two-week cycle
 - Provides predictable, reproducible results
+- **JPL Standard**: JPL uses the "odd-fridays" RDO pattern organization-wide
 
 **Implementation** ([src/utils/workScheduleUtils.ts:21-34](src/utils/workScheduleUtils.ts#L21-L34)):
 - Calculate ISO week number for any Friday
-- Even-week pattern: RDO on even-numbered weeks
-- Odd-week pattern: RDO on odd-numbered weeks
+- Odd-week pattern: RDO on odd-numbered weeks (JPL standard)
+- Pattern is automatically set when selecting 9/80 schedule (no user choice)
+- **Data Migration** (commit b189b88): Existing profiles with "even-fridays" are automatically converted to "odd-fridays" to match JPL policy
 
 ### Vacation Hour Calculation
 **Decision**: Automatically calculate vacation hours based on workdays only.
@@ -76,6 +82,20 @@ export const parseDate = (dateStr: string): Date => {
 **Why**: Users shouldn't need to "spend" vacation hours on days they wouldn't work anyway.
 
 ## Calendar Interface
+
+### Multi-Month Calendar Views
+**Decision**: Provide multiple calendar view options (1, 2, 6, or 12 months).
+
+**Rationale**:
+- Single month: Focused view for detailed planning
+- Two months (default on desktop): Balance between overview and detail
+- Six months: Mid-range planning view
+- **Twelve months** (commit 3fd5782): Full year overview for long-term planning
+
+**Implementation** ([src/components/Calendar/CalendarView.tsx](src/components/Calendar/CalendarView.tsx)):
+- View controls allow switching between 1, 2, 6, and 12-month views
+- Responsive layout: 3 columns on desktop, 2 on tablet, 1 on mobile
+- Compact tile size for multi-month views to fit more information
 
 ### Interactive Vacation Selection
 **Decision**: Two-click selection interface with hover preview.
@@ -128,12 +148,30 @@ export const parseDate = (dateStr: string): Date => {
 ## Balance Calculation
 
 ### Accrual Timing
-**Decision**: Vacation accrues on the first day of each month.
+**Decision**: Vacation accrues continuously throughout the year, calculated weekly.
 
 **Implementation** ([src/utils/accrualCalculator.ts](src/utils/accrualCalculator.ts)):
-- Calculate accrual rate based on years of service as of the accrual month
+- Calculate accrual rate based on years of service as of the accrual period
 - Rates change immediately when service milestones are reached (3, 8 years)
-- Accrual applied at the start of the month, not prorated
+- **Anniversary Boundary Handling** (commit 8796afa): When an anniversary occurs within a week, the higher accrual rate applies to the entire week to ensure the milestone is properly captured
+- Weekly accrual calculated from monthly rate: `(monthlyRate / daysPerMonth) * 7`
+- Uses 365.25 days per year to account for leap years
+
+### Personal Day Feature
+**Decision**: Implement JPL's 8-hour annual Personal Day with year-end rollover.
+
+**How It Works** (commits 1892275, 97f7ba5, 7d81108, 290de29, e942c57):
+- Each employee receives one 8-hour Personal Day per calendar year
+- Can be applied to any vacation to reduce vacation hour cost by 8 hours
+- **Rollover Logic**: If unused by December 31, automatically adds 8 hours to vacation balance
+- **Visual Indicator**: Calendar shows 'P' marker on first day of vacation using Personal Day
+- **User Control** (commit e942c57): Checkbox in profile setup to indicate if Personal Day was already used in the starting year (prevents double-counting on rollover)
+
+**Implementation** ([src/utils/balanceCalculator.ts](src/utils/balanceCalculator.ts)):
+- Track Personal Day usage via `personalDayUsed` flag on PlannedVacation
+- Year-end calculation checks if any vacation in that year used Personal Day
+- If unused, add 8 hours to accrued balance on December 31
+- VacationEditModal allows toggling Personal Day usage per vacation
 
 ### Week-by-Week Projection
 **Decision**: Calculate balances for each Saturday (week-end).
@@ -156,9 +194,10 @@ export const parseDate = (dateStr: string): Date => {
 **Structure**:
 ```json
 {
-  "version": "1.0",
+  "version": "1.1",
   "lastUpdated": "2025-12-18",
   "holidays": {
+    "2025": [...],
     "2026": [...],
     "2027": [...],
     "2028": [...]
@@ -170,7 +209,36 @@ export const parseDate = (dateStr: string): Date => {
 - `federal`: Standard federal holidays
 - `jpl`: JPL-specific holidays (Day After Thanksgiving, Christmas Eve, Floating holidays)
 
-**Future Enhancement**: Could add UI for users to customize holidays or import their own calendar.
+### Schedule-Specific Holidays
+**Decision**: Filter holidays based on work schedule type (commit 676fc12).
+
+**Rationale**:
+- 5/40 employees get additional compensation holidays not available to 9/80 employees
+- Prevents incorrect hour calculations for users on different schedules
+
+**Implementation** ([src/utils/holidayLoader.ts](src/utils/holidayLoader.ts)):
+- Each holiday entry can specify `scheduleFilter`:
+  - `'All'`: Available to both 5/40 and 9/80 (default)
+  - `'5/40-only'`: Only for 5/40 employees
+  - `'9/80-only'`: Only for 9/80 employees
+- Holiday loader filters based on user's work schedule
+- Hours calculated based on schedule (8 hours for 5/40, 9 hours for 9/80)
+
+### Holiday Data Versioning and Sync
+**Decision**: Version holiday data to trigger refresh when updated (commit 9baa0cb).
+
+**Problem Solved**:
+- Returning users with cached holiday data wouldn't see new holidays
+- Schedule changes didn't trigger holiday hour recalculation
+
+**Solution** ([src/App.tsx](src/App.tsx)):
+- Holiday data includes version number
+- App checks stored version against current version
+- If mismatch detected, force refresh of holidays
+- Also refreshes holidays if work schedule type changes
+- Ensures all users get updated holiday information without clearing all data
+
+**Current Coverage**: Holidays defined for 2025-2028
 
 ## Data Persistence
 
@@ -178,17 +246,20 @@ export const parseDate = (dateStr: string): Date => {
 **Keys**:
 - `jpl-vacation-user-profile`: User configuration
 - `jpl-vacation-planned-vacations`: Array of planned vacation objects
+- `jpl-vacation-holidays`: Cached holiday data with version tracking
 
 **Format**:
 ```typescript
 // UserProfile
 {
-  jplStartDate: "2020-01-15",
+  startDate: "2020-01-15",
   currentBalance: 120,
+  balanceAsOfDate: "2025-12-15",
   workSchedule: {
     type: "9/80",
-    rdoPattern: "even-fridays"
-  }
+    rdoPattern: "odd-fridays"  // Always "odd-fridays" for 9/80
+  },
+  personalDayUsedInStartYear?: true  // If Personal Day already used at balanceAsOfDate
 }
 
 // PlannedVacation
@@ -196,10 +267,26 @@ export const parseDate = (dateStr: string): Date => {
   id: "uuid",
   startDate: "2026-06-15",
   endDate: "2026-06-19",
-  hours: 40,
-  description?: "Summer vacation"
+  description?: "Summer vacation",
+  personalDayUsed?: true  // If this vacation uses the 8-hour Personal Day
+  // Note: hours calculated dynamically, not stored
 }
 ```
+
+### Cloud Sync (Optional)
+**Decision**: Optional Firebase integration for cross-device synchronization (commit 32a45a5).
+
+**Features**:
+- Google sign-in authentication
+- Automatic sync of profile and vacation data
+- Seamless transition between devices
+- Falls back gracefully if Firebase not configured
+- Data remains in localStorage even with cloud sync enabled
+
+**User Flow** (commit dc89755):
+- **WelcomeScreen**: New users choose "Get Started" or existing users "Sign in with Google"
+- **LoadingScreen**: Shows during authentication and initial sync
+- **Sync Indicator**: Shows sync status in app header when enabled
 
 ### Reset Functionality
 **Decision**: Simple reset button that clears all localStorage data.
@@ -266,27 +353,57 @@ export const parseDate = (dateStr: string): Date => {
 ## Testing Recommendations
 
 When making changes, manually test:
-1. **Timezone handling**: Test in Pacific, Eastern, UTC timezones
+1. **Timezone handling**: Test in Pacific, Eastern, UTC timezones (especially around DST transitions)
 2. **Saturday balances**: Ensure Saturday shows correct balance, not blank
-3. **RDO calculation**: Verify even/odd Friday patterns across year boundaries
+3. **RDO calculation**: Verify odd-Friday pattern across year boundaries for 9/80 schedules
 4. **Accrual transitions**: Test when years of service crosses 3-year or 8-year thresholds
-5. **Month boundaries**: Verify calendar tiles hide/show correctly at month edges
-6. **Negative balance**: Try to create vacation that exceeds available balance
+5. **Anniversary boundaries**: Ensure weeks containing anniversaries get correct accrual rate
+6. **Month boundaries**: Verify calendar tiles hide/show correctly at month edges
+7. **Negative balance**: Try to create vacation that exceeds available balance
+8. **Personal Day**:
+   - Apply Personal Day to vacation, verify 8-hour reduction
+   - Verify only one Personal Day can be used per year
+   - Test year-end rollover (unused Personal Day adds 8 hours on Dec 31)
+   - Test "already used" checkbox prevents double-counting
+9. **Schedule-specific holidays**: Verify 5/40 and 9/80 employees see correct holidays
+10. **Holiday versioning**: Update holiday version and verify existing users get new data
+11. **Data migration**: Test that old profiles auto-migrate (e.g., even-fridays → odd-fridays)
+12. **Multi-month views**: Test 1, 2, 6, and 12-month calendar views on various screen sizes
 
 ## Key Files Reference
 
+### Core Utilities
 - [src/utils/dateUtils.ts](src/utils/dateUtils.ts) - Date formatting and parsing (LOCAL TIME ONLY!)
 - [src/utils/workScheduleUtils.ts](src/utils/workScheduleUtils.ts) - RDO calculation and work hours
-- [src/utils/accrualCalculator.ts](src/utils/accrualCalculator.ts) - Monthly vacation accrual logic
-- [src/utils/balanceCalculator.ts](src/utils/balanceCalculator.ts) - Week-by-week balance projection
+- [src/utils/accrualCalculator.ts](src/utils/accrualCalculator.ts) - Continuous accrual logic with anniversary handling
+- [src/utils/balanceCalculator.ts](src/utils/balanceCalculator.ts) - Week-by-week balance projection with Personal Day rollover
 - [src/utils/calendarDataMapper.ts](src/utils/calendarDataMapper.ts) - Maps weekly data to daily calendar tiles
-- [src/components/Calendar/CalendarView.tsx](src/components/Calendar/CalendarView.tsx) - Interactive calendar interface
-- [src/data/holidays.json](src/data/holidays.json) - Holiday definitions for 2026-2030
+- [src/utils/holidayLoader.ts](src/utils/holidayLoader.ts) - Schedule-aware holiday filtering
+
+### Components
+- [src/components/WelcomeScreen/WelcomeScreen.tsx](src/components/WelcomeScreen/WelcomeScreen.tsx) - Initial user entry point
+- [src/components/UserInputForm/UserInputForm.tsx](src/components/UserInputForm/UserInputForm.tsx) - Profile setup with Personal Day option
+- [src/components/Calendar/CalendarView.tsx](src/components/Calendar/CalendarView.tsx) - Multi-month interactive calendar
+- [src/components/Calendar/VacationEditModal.tsx](src/components/Calendar/VacationEditModal.tsx) - Vacation editor with Personal Day toggle
+- [src/components/Calendar/CalendarLegend.tsx](src/components/Calendar/CalendarLegend.tsx) - Legend including 'P' indicator
+
+### Data & Configuration
+- [src/data/holidays.json](src/data/holidays.json) - Holiday definitions for 2025-2028
+- [src/types/index.ts](src/types/index.ts) - TypeScript interfaces including Personal Day fields
+
+### Hooks
+- [src/hooks/useVacationCalculator.ts](src/hooks/useVacationCalculator.ts) - Main calculation hook with data migration logic
+- [src/hooks/useAuth.ts](src/hooks/useAuth.ts) - Google authentication for cloud sync
 
 ## Lessons Learned
 
-1. **Timezone bugs are subtle**: Always test date handling in multiple timezones, especially around boundaries
+1. **Timezone bugs are subtle**: Always test date handling in multiple timezones, especially around boundaries and DST transitions
 2. **Local time is simpler**: For date-only operations, local time components are more intuitive than UTC
-3. **Visual feedback matters**: Hover previews and selection states make the interface more predictable
+3. **Visual feedback matters**: Hover previews, selection states, and visual indicators (like 'P' for Personal Day) make the interface more predictable
 4. **Validation upfront**: Block invalid actions rather than allowing them and showing errors afterward
 5. **Co-location works**: Keeping related files together (component + CSS) improves maintainability
+6. **Data migration is critical**: When changing data schemas or business rules (like RDO patterns), implement automatic migration to avoid breaking existing users
+7. **Versioning enables updates**: Holiday data versioning allows pushing updates to existing users without forcing a full reset
+8. **Boundary conditions matter**: Anniversary dates, year-end rollovers, and week boundaries need special handling to ensure accurate calculations
+9. **User onboarding sets the tone**: WelcomeScreen provides clear entry points for new vs. returning users
+10. **Optional features should degrade gracefully**: Cloud sync works when available but doesn't prevent app usage when unavailable
