@@ -103,14 +103,25 @@ export const useVacationCalculator = () => {
   };
 
   // Validation helper - check if a vacation can be afforded
-  const canAffordVacation = (vacation: Omit<PlannedVacation, 'id'>): { canAfford: boolean; projectedBalance: number } => {
+  // If excludeVacationId is provided, that vacation is excluded from the calculation
+  // (useful when editing an existing vacation)
+  const canAffordVacation = (
+    vacation: Omit<PlannedVacation, 'id'> & { id?: string },
+    excludeVacationId?: string
+  ): { canAfford: boolean; projectedBalance: number } => {
     if (!userProfile) return { canAfford: false, projectedBalance: 0 };
 
     const vacationEndDate = parseDate(vacation.endDate);
+
+    // Filter out the vacation being edited (if any)
+    const filteredVacations = excludeVacationId
+      ? plannedVacations.filter(v => v.id !== excludeVacationId)
+      : plannedVacations;
+
     const projectedBalance = calculateProjectedBalance(
       userProfile,
       vacationEndDate,
-      [...plannedVacations, { ...vacation, id: 'temp' }],
+      [...filteredVacations, { ...vacation, id: vacation.id || 'temp' }],
       holidays
     );
 

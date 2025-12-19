@@ -24,7 +24,7 @@ interface CalendarViewProps {
   onAddVacation: (vacation: Omit<PlannedVacation, 'id'>) => void;
   onUpdateVacation: (id: string, updates: Partial<PlannedVacation>) => void;
   onDeleteVacation: (id: string) => void;
-  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'>) => {
+  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'> & { id?: string }, excludeVacationId?: string) => {
     canAfford: boolean;
     projectedBalance: number;
   };

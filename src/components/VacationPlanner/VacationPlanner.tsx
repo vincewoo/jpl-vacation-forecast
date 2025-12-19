@@ -12,7 +12,7 @@ interface VacationPlannerProps {
   onAdd: (vacation: Omit<PlannedVacation, 'id'>) => void;
   onUpdate: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
-  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'>) => { canAfford: boolean; projectedBalance: number };
+  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'> & { id?: string }, excludeVacationId?: string) => { canAfford: boolean; projectedBalance: number };
 }
 
 const VacationPlanner: React.FC<VacationPlannerProps> = ({

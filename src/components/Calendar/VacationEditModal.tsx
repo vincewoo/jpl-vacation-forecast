@@ -11,7 +11,7 @@ interface VacationEditModalProps {
   onSave: (id: string, updates: Partial<PlannedVacation>) => void;
   onDelete: (id: string) => void;
   onClose: () => void;
-  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'>) => {
+  canAffordVacation: (vacation: Omit<PlannedVacation, 'id'> & { id?: string }, excludeVacationId?: string) => {
     canAfford: boolean;
     projectedBalance: number;
   };
@@ -79,12 +79,12 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
       return;
     }
 
-    // Check affordability
+    // Check affordability, excluding the current vacation from the calculation
     const { canAfford, projectedBalance } = canAffordVacation({
       startDate,
       endDate,
       personalDayUsed,
-    });
+    }, vacation.id);
 
     if (!canAfford) {
       setError(
