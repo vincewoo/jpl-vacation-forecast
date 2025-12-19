@@ -50,6 +50,7 @@ export interface PlannedVacation {
   startDate: string; // ISO date string for serialization
   endDate: string; // ISO date string for serialization
   description?: string;
+  personalDayUsed?: boolean; // Whether the 8-hour personal day is applied to this vacation
   // Note: hours are calculated dynamically based on work schedule and holidays
 }
 
@@ -101,4 +102,5 @@ export interface CalendarDayInfo extends CalendarDay {
   isHoliday?: boolean;
   holidayName?: string;
   isRDO?: boolean;
+  isPersonalDayStart?: boolean; // If this day is the start of a vacation using the personal day
 }

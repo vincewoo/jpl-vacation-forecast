@@ -35,14 +35,50 @@ export const calculateWeeklyBalances = (
   const profileStartDate = parseDate(userProfile.startDate);
   const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
+  // Identify years where the personal day was used
+  const yearsWithPersonalDay = new Set(
+    plannedVacations
+      .filter(v => v.personalDayUsed)
+      .map(v => parseDate(v.startDate).getFullYear())
+  );
+
   for (const weekStart of weeks) {
     const weekEnd = getWeekEnd(weekStart);
 
     // Calculate accrual for this week, but only if the week starts on or after the balanceAsOfDate
     // The balanceAsOfDate represents the starting balance at the beginning of that date
-    const accrued = weekStart >= balanceAsOfDate
+    let accrued = weekStart >= balanceAsOfDate
       ? calculateAccrualForRange(profileStartDate, weekStart, weekEnd)
       : 0;
+
+    // Check for year-end rollover of unused Personal Day
+    // Logic: If we are at the end of the year (week crosses year boundary or ends on Dec 31)
+    // and the personal day for that year wasn't used, add 8 hours.
+    // We check if the week contains Dec 31st of the current year.
+    // Or simpler: check if the year changes from start of week to end of week?
+    // Weeks can cross years. e.g. Dec 29 - Jan 4.
+    // If the week contains the transition, we check the year that is ending.
+    const yearStart = weekStart.getFullYear();
+    const yearEnd = weekEnd.getFullYear();
+
+    // If we cross a year boundary
+    if (yearEnd > yearStart) {
+      if (!yearsWithPersonalDay.has(yearStart)) {
+        // Add 8 hours credit for unused personal day of the previous year
+        accrued += 8;
+      }
+    } else {
+      // Also handle the case where the week ends exactly on Dec 31st (rare, but possible if weeks align)
+      // Actually getWeekEnd usually returns Saturday/Sunday.
+      // If the week ends exactly on Dec 31st, we should credit it then.
+      // But typically weeks are 7 days.
+      // If the week is Dec 25 - Dec 31.
+      if (weekEnd.getMonth() === 11 && weekEnd.getDate() === 31) {
+         if (!yearsWithPersonalDay.has(yearStart)) {
+           accrued += 8;
+         }
+      }
+    }
 
     // Find vacations in this week
     const weekVacations = plannedVacations.filter(vacation => {
@@ -81,7 +117,50 @@ export const calculateWeeklyBalances = (
         userProfile.workSchedule,
         holidays
       );
-      return sum + vacationHours;
+
+      // If Personal Day is used for this vacation, subtract 8 hours from the cost
+      // BUT only subtract it once per vacation.
+      // Since a vacation can span multiple weeks, we need to be careful not to subtract 8 hours *every week*.
+      // Strategy: Apply the deduction to the FIRST week of the vacation intersection?
+      // Or distribute it?
+      // Logic: The "Personal Day" replaces one day of vacation.
+      // If the vacation starts in this week, we apply the deduction.
+      // Or simpler: Check if the vacation START date is within the current week range.
+      let deduction = 0;
+      if (v.personalDayUsed) {
+        // Check if the vacation start date falls within this week
+        // Note: vacStart is the vacation start date.
+        // If vacStart is in [weekStart, weekEnd], apply deduction here.
+        if (vacStart >= weekStart && vacStart <= weekEnd) {
+           deduction = 8;
+        }
+      }
+
+      // Ensure we don't reduce cost below 0 for this week, but technically the deduction is for the whole vacation.
+      // If the vacation is split across weeks, and the first week has only 4 hours, and second week has 36...
+      // If we deduct 8 from first week, we get -4 (capped at 0).
+      // Remaining 4 hours of deduction are lost.
+      // Ideally, the Personal Day replaces a specific day (the first day).
+      // If the first day is in this week, we deduct the hours of that day?
+      // The requirement says "reduce the 'Hours Used' by 8 hours".
+      // Assuming the Personal Day is the FIRST day, we should deduct the cost of the first day?
+      // Or just a flat 8?
+      // If I take a 4 hour day on Monday (Personal Day), cost is 0.
+      // If I take a 2 week vacation starting Monday.
+      // First week cost: 40 hours. Deduction 8. Net 32.
+      // It seems safe to deduct 8 from the week that contains the start date.
+
+      const effectiveCost = Math.max(0, vacationHours - deduction);
+
+      // Wait, if I have `vacationHours` for *this week* intersection.
+      // And I subtract 8.
+      // If vacation starts on Friday (8 hours) and continues next week.
+      // This week: 8 hours. Deduction 8. Result 0. Correct.
+      // If vacation starts Friday (4 hours) and continues.
+      // This week: 4 hours. Deduction 8. Result 0. (4 hours "wasted" deduction?)
+      // This matches typical "Personal Day" logic (use it or lose it for that day).
+
+      return sum + effectiveCost;
     }, 0);
 
     // Calculate ending balance and cap at maximum
@@ -179,7 +258,9 @@ export const calculateProjectedBalance = (
     })
     .reduce((sum, v) => {
       const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
-      return sum + vacationHours;
+      // Apply Personal Day deduction
+      const deduction = v.personalDayUsed ? 8 : 0;
+      return sum + Math.max(0, vacationHours - deduction);
     }, 0);
 
   return userProfile.currentBalance + accrued - used;

@@ -109,6 +109,7 @@ export const mapWeeklyBalancesToDays = (
       isHoliday: !!holiday,
       holidayName: holiday?.name,
       isRDO: isRDODay,
+      isPersonalDayStart: vacation?.personalDayUsed && formatDate(parseDate(vacation.startDate)) === dateKey,
     });
   }
 
