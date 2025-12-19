@@ -18,6 +18,10 @@ const CalendarLegend: React.FC = () => {
           <span className="legend-label">RDO (9/80)</span>
         </div>
         <div className="legend-item">
+          <span className="legend-indicator personal-day">P</span>
+          <span className="legend-label">Personal Day</span>
+        </div>
+        <div className="legend-item">
           <span className="legend-box weekend"></span>
           <span className="legend-label">Weekend</span>
         </div>

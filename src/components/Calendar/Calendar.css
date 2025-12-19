@@ -688,6 +688,10 @@
   background-color: var(--calendar-rdo);
 }
 
+.legend-indicator.personal-day {
+  background-color: var(--calendar-personal);
+}
+
 .legend-box {
   width: 20px;
   height: 20px;
