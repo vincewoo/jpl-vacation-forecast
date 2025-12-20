@@ -219,7 +219,7 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                   </div>
                   <div className="stat-divider">=</div>
                   <div className="stat">
-                    <span className="stat-value">{rec.efficiency.toFixed(1)}x</span>
+                    <span className="stat-value">{rec.efficiency === 999 ? '∞' : `${rec.efficiency.toFixed(1)}x`}</span>
                     <span className="stat-label">value</span>
                   </div>
                 </div>

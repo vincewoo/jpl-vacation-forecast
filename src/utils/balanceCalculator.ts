@@ -17,7 +17,8 @@ import { getRDODatesInRange, calculateVacationHoursForRange, getVacationHours } 
 
 // JPL vacation balance limits
 export const MAX_VACATION_BALANCE = 320; // Maximum accrual cap in hours
-export const BALANCE_WARNING_THRESHOLD = 280; // Warning threshold in hours
+export const BALANCE_WARNING_THRESHOLD = 280; // Warning threshold (approaching max) in hours
+export const LOW_BALANCE_WARNING_THRESHOLD = 40; // Warning threshold (approaching zero) in hours
 
 /**
  * Calculate weekly balances for a date range

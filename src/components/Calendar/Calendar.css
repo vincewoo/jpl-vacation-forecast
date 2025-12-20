@@ -409,6 +409,12 @@
   color: var(--success-light);
 }
 
+.balance-display.low-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border: 1px solid #ffc107;
+}
+
 .balance-display.warning {
   color: #856404;
   background-color: #fff3cd;

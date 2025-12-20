@@ -1,6 +1,6 @@
 import React from 'react';
 import { CalendarDayInfo } from '../../types';
-import { MAX_VACATION_BALANCE, BALANCE_WARNING_THRESHOLD } from '../../utils/balanceCalculator';
+import { MAX_VACATION_BALANCE, BALANCE_WARNING_THRESHOLD, LOW_BALANCE_WARNING_THRESHOLD } from '../../utils/balanceCalculator';
 
 interface CalendarTileProps {
   dayInfo: CalendarDayInfo | undefined;
@@ -53,6 +53,8 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
               ? 'at-max'
               : dayInfo.balance > BALANCE_WARNING_THRESHOLD
               ? 'warning'
+              : dayInfo.balance <= LOW_BALANCE_WARNING_THRESHOLD
+              ? 'low-warning'
               : 'positive'
           }`}
           title={dayInfo.accrualRate !== undefined ? `Accrual rate: +${dayInfo.accrualRate.toFixed(2)} hours` : undefined}
