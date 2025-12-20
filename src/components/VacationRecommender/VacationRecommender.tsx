@@ -48,8 +48,8 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
       filteredRecs = filteredRecs.filter(rec => rec.totalDays > 7);
     }
 
-    // Return top 15 from the filtered results
-    const recs = filteredRecs.slice(0, 15);
+    // Return top 10 from the filtered results
+    const recs = filteredRecs.slice(0, 10);
 
     console.log('[VacationRecommender] Pipeline: Generated:', allRecs.length, '→ Filtered:', filteredRecs.length, '→ Shown:', recs.length);
     return recs;
