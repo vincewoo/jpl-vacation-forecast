@@ -354,9 +354,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         ? 12
         : viewMode === '6-month'
         ? 6
-        : isDoubleView
-        ? 2
-        : 1;
+        : 2;
     const dates: Date[] = [];
     const baseDate = new Date(activeStartDate);
 

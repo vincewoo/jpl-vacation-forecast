@@ -478,7 +478,7 @@
 .six-month-calendar-header {
   text-align: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   padding: 0.75rem 1rem;
   background-color: var(--bg-hover);
   border-bottom: 1px solid var(--border-primary);
@@ -748,7 +748,7 @@
 
   .six-month-grid,
   .twelve-month-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr !important;
     gap: 1rem;
   }
 
@@ -792,11 +792,11 @@
   }
 }
 
-/* Tablet */
-@media (min-width: 769px) and (max-width: 1024px) {
+/* Tablet and Medium Desktop */
+@media (min-width: 769px) and (max-width: 1600px) {
   .six-month-grid,
   .twelve-month-grid {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, 1fr) !important;
   }
 
   .react-calendar__tile {
@@ -841,7 +841,7 @@ button:focus-visible {
 .twelve-month-calendar-header {
   text-align: center;
   font-weight: 600;
-  font-size: 1rem;
+  font-size: 1.1rem;
   padding: 0.75rem 1rem;
   background-color: var(--bg-hover);
   border-bottom: 1px solid var(--border-primary);

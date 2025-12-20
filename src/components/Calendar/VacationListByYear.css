@@ -152,48 +152,105 @@
     border-radius: 6px;
   }
 
-  .vacation-table th,
+  /* Convert table to card layout on mobile */
+  .vacation-table thead {
+    display: none; /* Hide table headers */
+  }
+
+  .vacation-table tbody {
+    display: block;
+  }
+
+  .vacation-table tbody tr {
+    display: block;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-primary);
+    border-radius: 8px;
+    padding: 1rem;
+    background-color: var(--bg-secondary);
+  }
+
+  .vacation-table tbody tr:last-child {
+    margin-bottom: 0;
+  }
+
   .vacation-table td {
-    padding: 0.75rem 0.5rem;
+    display: block;
+    padding: 0;
+    border: none;
+  }
+
+  .vacation-table td:not(.vacation-actions) {
+    text-align: left;
+  }
+
+  /* Line 1: Description (prominent) */
+  .vacation-description {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-heading);
+    margin-bottom: 0.75rem;
+    max-width: 100%;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+  }
+
+  /* Line 2: Dates, Duration, Hours in a flex row */
+  .vacation-dates,
+  .vacation-duration,
+  .vacation-hours {
+    display: inline-block;
+    margin-right: 1rem;
     font-size: 0.875rem;
   }
 
-  .vacation-table th {
-    font-size: 0.75rem;
+  .vacation-dates {
+    font-weight: 500;
+    white-space: normal;
   }
 
-  .vacation-description {
-    max-width: 150px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  .vacation-duration {
+    color: var(--text-secondary);
   }
 
-  .action-button {
-    padding: 0.375rem 0.75rem;
-    font-size: 0.8rem;
-    margin-left: 0.25rem;
+  .vacation-duration::before {
+    content: "Duration: ";
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .vacation-hours {
+    font-weight: 500;
+  }
+
+  .vacation-hours::before {
+    content: "Hours: ";
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* Actions right-aligned on separate line */
+  .vacation-actions {
+    display: block;
+    margin-top: 0.75rem;
+    width: 100%;
+    text-align: right;
+  }
+
+  .vacation-actions .action-button {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    margin-left: 0.5rem;
+    margin-bottom: 0.25rem;
   }
 }
 
-/* Extra small screens - stack buttons */
+/* Extra small screens - no changes needed, cards work well */
 @media (max-width: 480px) {
-  .vacation-table th:nth-child(2),
-  .vacation-table td:nth-child(2) {
-    display: none; /* Hide duration column on very small screens */
-  }
-
-  .vacation-description {
-    max-width: 100px;
-  }
-
   .action-button {
-    display: block;
-    width: 100%;
-    margin: 0.25rem 0;
-  }
-
-  .vacation-actions {
-    min-width: 100px;
+    display: inline-block;
+    width: auto;
   }
 }

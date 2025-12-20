@@ -34,7 +34,10 @@ const VacationEntry: React.FC<VacationEntryProps> = ({ vacation, workSchedule, h
       <div className="vacation-entry-content">
         <div className="vacation-entry-dates">
           <span className="date-range">
-            {formatDateDisplay(vacation.startDate)} - {formatDateDisplay(vacation.endDate)}
+            {vacation.startDate === vacation.endDate
+              ? formatDateDisplay(vacation.startDate)
+              : `${formatDateDisplay(vacation.startDate)} - ${formatDateDisplay(vacation.endDate)}`
+            }
           </span>
           <span className="duration">{getDuration()}</span>
         </div>
