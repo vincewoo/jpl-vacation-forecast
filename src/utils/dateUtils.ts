@@ -67,17 +67,6 @@ export const parseDate = (dateString: string): Date => {
 };
 
 /**
- * Check if two dates are the same day
- */
-export const isSameDay = (date1: Date, date2: Date): boolean => {
-  return (
-    date1.getFullYear() === date2.getFullYear() &&
-    date1.getMonth() === date2.getMonth() &&
-    date1.getDate() === date2.getDate()
-  );
-};
-
-/**
  * Check if a date falls within a range (inclusive)
  */
 export const isDateInRange = (date: Date, start: Date, end: Date): boolean => {
@@ -85,25 +74,6 @@ export const isDateInRange = (date: Date, start: Date, end: Date): boolean => {
   const startTime = start.getTime();
   const endTime = end.getTime();
   return dateTime >= startTime && dateTime <= endTime;
-};
-
-/**
- * Get the number of days between two dates
- */
-export const getDaysBetween = (start: Date, end: Date): number => {
-  const millisecondsPerDay = 1000 * 60 * 60 * 24;
-  const startTime = new Date(start).setHours(0, 0, 0, 0);
-  const endTime = new Date(end).setHours(0, 0, 0, 0);
-  return Math.round((endTime - startTime) / millisecondsPerDay);
-};
-
-/**
- * Add days to a date
- */
-export const addDays = (date: Date, days: number): Date => {
-  const result = new Date(date);
-  result.setDate(result.getDate() + days);
-  return result;
 };
 
 /**

@@ -45,33 +45,3 @@ export const getHolidaysForYearRange = (
   return result;
 };
 
-/**
- * Get holidays within a specific date range
- * @param startDate Start date
- * @param endDate End date
- * @param scheduleType Optional work schedule type to filter holidays
- * @returns Array of holidays without hours (hours will be added based on work schedule)
- */
-export const getHolidaysForDateRange = (
-  startDate: Date,
-  endDate: Date,
-  scheduleType?: ScheduleType
-): Omit<Holiday, 'hours'>[] => {
-  const startYear = startDate.getFullYear();
-  const endYear = endDate.getFullYear();
-
-  return getHolidaysForYearRange(startYear, endYear, scheduleType).filter((h) => {
-    const holidayDate = new Date(h.date);
-    return holidayDate >= startDate && holidayDate <= endDate;
-  });
-};
-
-/**
- * Get all years available in the holiday data
- * @returns Sorted array of years
- */
-export const getAllAvailableYears = (): number[] => {
-  return Object.keys(holidayData.holidays)
-    .map(Number)
-    .sort((a, b) => a - b);
-};
