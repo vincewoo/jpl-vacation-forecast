@@ -18,7 +18,7 @@ const CalendarTile: React.FC<CalendarTileProps> = ({
   if (!dayInfo) return null;
 
   return (
-    <div className="calendar-tile-content">
+    <div className="calendar-tile-content" title={dayInfo.holidayName}>
       {/* Day indicators */}
       <div className="day-indicators">
         {dayInfo.isPersonalDayStart && (

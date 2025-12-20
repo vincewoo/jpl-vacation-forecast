@@ -1,6 +1,6 @@
 {
-  "version": "1.2",
-  "lastUpdated": "2025-12-18",
+  "version": "1.3",
+  "lastUpdated": "2025-12-20",
   "holidays": {
     "2025": [
       { "name": "Christmas", "date": "2025-12-25", "type": "federal" },
@@ -17,12 +17,45 @@
       { "name": "Independence Day", "date": "2026-07-03", "type": "federal", "notes": "Observed" },
       { "name": "Labor Day", "date": "2026-09-07", "type": "federal" },
       { "name": "Thanksgiving", "date": "2026-11-26", "type": "federal" },
-      { "name": "Day After Thanksgiving", "date": "2026-11-25", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Day After Thanksgiving (Observed)", "date": "2026-11-25", "type": "federal", "scheduleFilter": "9/80-only"},
       { "name": "Day After Thanksgiving", "date": "2026-11-27", "type": "federal", "scheduleFilter": "5/40-only"},
-      { "name": "Christmas", "date": "2026-12-24", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Christmas (Observed)", "date": "2026-12-24", "type": "federal", "scheduleFilter": "9/80-only"},
       { "name": "Christmas", "date": "2026-12-25", "type": "federal", "scheduleFilter": "5/40-only" },
       { "name": "JPL Floating", "date": "2026-01-02", "type": "jpl" },
       { "name": "JPL Floating", "date": "2026-12-28", "type": "jpl" }
+    ],
+    "2027": [
+      { "name": "New Year's Day", "date": "2027-01-01", "type": "federal" },
+      { "name": "Martin Luther King Jr. Day", "date": "2027-01-18", "type": "federal" },
+      { "name": "Presidents' Day", "date": "2027-02-15", "type": "federal" },
+      { "name": "Memorial Day", "date": "2027-05-31", "type": "federal" },
+      { "name": "Juneteenth", "date": "2027-06-18", "type": "federal" },
+      { "name": "Independence Day (Observed)", "date": "2027-07-05", "type": "federal", "notes": "Observed" },
+      { "name": "Labor Day", "date": "2027-09-06", "type": "federal" },
+      { "name": "Thanksgiving", "date": "2027-11-25", "type": "federal" },
+      { "name": "Day After Thanksgiving (Observed)", "date": "2027-11-24", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Day After Thanksgiving", "date": "2027-11-26", "type": "federal", "scheduleFilter": "5/40-only"},
+      { "name": "Christmas (Observed)", "date": "2027-12-23", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Christmas (Observed)", "date": "2027-12-24", "type": "federal", "scheduleFilter": "5/40-only" },
+      { "name": "JPL Floating", "date": "2027-12-22", "type": "jpl" },
+      { "name": "JPL Floating", "date": "2027-12-21", "type": "jpl", "scheduleFilter": "9/80-only" },
+      { "name": "JPL Floating", "date": "2027-12-23", "type": "jpl", "scheduleFilter": "5/40-only" }
+    ],
+    "2028": [
+      { "name": "New Year's Day (Observed)", "date": "2027-12-31", "type": "federal" },
+      { "name": "Martin Luther King Jr. Day", "date": "2028-01-17", "type": "federal" },
+      { "name": "Presidents' Day", "date": "2028-02-21", "type": "federal" },
+      { "name": "Memorial Day", "date": "2028-05-29", "type": "federal" },
+      { "name": "Juneteenth", "date": "2028-06-19", "type": "federal" },
+      { "name": "Independence Day", "date": "2028-07-04", "type": "federal", "notes": "Observed" },
+      { "name": "Labor Day", "date": "2028-09-04", "type": "federal" },
+      { "name": "Thanksgiving (Observed)", "date": "2028-11-24", "type": "federal", "scheduleFilter": "5/40-only"},
+      { "name": "Thanksgiving (Observed)", "date": "2028-11-23", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Day After Thanksgiving (Observed)", "date": "2028-11-22", "type": "federal", "scheduleFilter": "9/80-only"},
+      { "name": "Day After Thanksgiving (Observed)", "date": "2028-11-2", "type": "federal", "scheduleFilter": "5/40-only"},
+      { "name": "Christmas", "date": "2028-12-25", "type": "federal"},
+      { "name": "JPL Floating", "date": "2028-07-03", "type": "jpl" },
+      { "name": "JPL Floating", "date": "2028-12-26", "type": "jpl" }
     ]
   }
 }
