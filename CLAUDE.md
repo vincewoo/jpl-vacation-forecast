@@ -12,6 +12,7 @@ The application follows a hierarchical component structure:
 - **UserInputForm**: Initial profile setup and configuration
 - **VacationPlanner**: Vacation entry management (list view)
 - **CalendarView**: Visual calendar interface for vacation planning
+- **VacationRecommender**: AI-powered vacation opportunity finder with composite scoring
 - **BalanceTracker**: Week-by-week balance forecasting and annual summaries
 - **CloudSync**: Optional Google sign-in for cross-device data synchronization
 
@@ -296,6 +297,207 @@ export const parseDate = (dateStr: string): Date => {
 - No server means no recovery mechanism needed
 - Users should be able to easily reconfigure
 
+## Vacation Recommendations
+
+### Composite Scoring System
+**Decision**: Implement an AI-powered recommendation engine that finds optimal vacation opportunities using a weighted composite score.
+
+**Rationale**:
+- Users often struggle to identify the most efficient vacation dates
+- Holidays, RDOs, and weekends create opportunities to maximize time off with minimal vacation hours
+- A data-driven approach can systematically identify high-value opportunities
+- Composite scoring balances multiple factors (efficiency, bracketing, length) rather than optimizing for just one
+
+**Scoring Formula** ([src/utils/vacationRecommender.ts](src/utils/vacationRecommender.ts)):
+- **50% Efficiency**: Days off ÷ (vacation hours ÷ standard hours per day)
+  - Normalized to maximum of 5.0x to prevent dominance of extreme outliers
+  - Zero-hour vacations (all free days) get special handling:
+    - 4+ days: Efficiency value of 3.0 (excellent)
+    - 3 days: Efficiency value of 1.5 (good)
+- **25% Bracketing Bonus**: Full 25 points if vacation is "bracketed"
+  - Bracketed = Starts on free day after workday AND ends on free day before workday
+  - Maximizes consecutive days off by carefully positioning around work boundaries
+- **25% Trip Length**: Logarithmic scale favoring longer trips
+  - Uses `log(totalDays) / log(14)` to provide diminishing returns
+  - Caps at 25 points (achieved at 14+ days)
+  - Prevents very short trips from dominating results
+
+**Implementation Details**:
+```typescript
+const calculateScore = (
+  efficiency: number,
+  isBracketed: boolean,
+  totalDays: number,
+  vacationHours: number
+): number => {
+  // Normalize efficiency (cap at 5x, handle zero-hour special cases)
+  let normalizedEfficiency: number;
+  if (vacationHours === 0) {
+    normalizedEfficiency = totalDays >= 4 ? 3.0 : 1.5;
+  } else {
+    normalizedEfficiency = Math.min(efficiency, 5.0);
+  }
+
+  const efficiencyScore = (normalizedEfficiency / 5.0) * 50;
+  const bracketingScore = isBracketed ? 25 : 0;
+  const lengthScore = Math.min((Math.log(totalDays) / Math.log(14)) * 25, 25);
+
+  return efficiencyScore + bracketingScore + lengthScore;
+};
+```
+
+### Bracketed Vacation Detection
+**Decision**: Define and detect "bracketed" vacations as a key quality indicator.
+
+**Definition**: A vacation is bracketed when:
+1. It starts on a free day (weekend, holiday, or RDO)
+2. The day before the start is a workday
+3. It ends on a free day (weekend, holiday, or RDO)
+4. The day after the end is a workday
+
+**Rationale**:
+- Bracketed vacations maximize consecutive time off
+- They begin immediately after finishing work and end immediately before returning
+- Example: Taking Mon-Fri off when you have an RDO Friday and the following Monday is a holiday
+  - Actual vacation: Mon-Thu (32 hours for 9/80)
+  - Total time off: Fri (RDO) + Mon-Fri (vacation) + Sat-Sun + Mon (holiday) = 10 days
+  - Efficiency: 10 days / 3.56 work days = 2.81x
+
+**Implementation** ([src/utils/vacationRecommender.ts](src/utils/vacationRecommender.ts)):
+```typescript
+const isBracketed = (
+  startDate: Date,
+  endDate: Date,
+  workSchedule: WorkSchedule,
+  holidayMap: Map<string, boolean>
+): boolean => {
+  // Vacation must start on a free day
+  if (!isFreeDay(startDate, workSchedule, holidayMap)) return false;
+
+  // Day before start must be a workday
+  const dayBeforeStart = new Date(startDate);
+  dayBeforeStart.setDate(dayBeforeStart.getDate() - 1);
+  if (isFreeDay(dayBeforeStart, workSchedule, holidayMap)) return false;
+
+  // Vacation must end on a free day
+  if (!isFreeDay(endDate, workSchedule, holidayMap)) return false;
+
+  // Day after end must be a workday
+  const dayAfterEnd = new Date(endDate);
+  dayAfterEnd.setDate(dayAfterEnd.getDate() + 1);
+  if (isFreeDay(dayAfterEnd, workSchedule, holidayMap)) return false;
+
+  return true;
+};
+```
+
+### Anchor Date Strategy
+**Decision**: Generate vacation candidates starting from strategic "anchor" dates rather than testing every possible date.
+
+**Anchor Types**:
+1. **Holidays**: Start 1-7 days before each holiday
+2. **RDO Fridays**: Start 1-7 days before each RDO (for 9/80 schedules)
+3. **Fridays**: Every Friday in the date range (common vacation start day)
+4. **Mondays**: Every Monday in the date range (common vacation end day)
+
+**Rationale**:
+- Reduces computational cost by focusing on high-potential dates
+- Holidays and RDOs are natural magnets for vacation planning
+- Fridays/Mondays align with typical vacation patterns
+- Covers the vast majority of meaningful vacation opportunities
+- Testing every date would generate mostly redundant, lower-quality recommendations
+
+**Performance**: Generates thousands of candidates, then filters and sorts by composite score to find top 15.
+
+### User Interface Design
+**Decision**: Collapsible panel with year selector, trip length filter, and score visualization.
+
+**Features** ([src/components/VacationRecommender/VacationRecommender.tsx](src/components/VacationRecommender/VacationRecommender.tsx)):
+1. **Collapsed State**:
+   - Single button: "See Vince's Top Picks!" with count badge
+   - Minimal visual footprint when not in use
+
+2. **Expanded State**:
+   - **Year Selector**: Choose from current year + 2 future years (defaults to next year in Q4)
+   - **Trip Length Filter**: All / Short (≤7 days) / Long (>7 days)
+   - **Top 15 Recommendations**: Ranked list with detailed cards
+   - **Definitions Section**: Explains efficiency and bracketed concepts
+
+3. **Recommendation Cards**:
+   - Rank badge (#1, #2, etc.)
+   - Date range in readable format
+   - Efficiency badge (Excellent/Great/Good/Fair)
+   - Stats: Days off, vacation hours required, efficiency multiplier
+   - **Score Breakdown Visualization**: Three progress bars showing contribution from each component
+     - Purple bar: Efficiency (50% weight)
+     - Green bar: Bracketing (25% weight)
+     - Orange bar: Length (25% weight)
+   - Context tags: Bracketed, weekends, holidays, RDOs
+   - "Add to Calendar" button for one-click application
+
+4. **Responsive Design**: Cards stack vertically, compact on mobile
+
+**Score Visualization**:
+```tsx
+<div className="score-breakdown">
+  <div className="score-header">
+    <span className="score-title">Composite Score: {rec.score.toFixed(1)}</span>
+  </div>
+  <div className="score-components">
+    <div className="score-component">
+      <div className="score-bar-container">
+        <div className="score-bar efficiency-bar"
+             style={{ width: `${(normalizedEfficiency / 5.0) * 100}%` }} />
+      </div>
+      <span className="score-label">Efficiency (50%)</span>
+    </div>
+    {/* Bracketing and Length bars... */}
+  </div>
+</div>
+```
+
+### Filter Pipeline
+**Decision**: Generate large pool of candidates first, then apply filters.
+
+**Pipeline** ([src/components/VacationRecommender/VacationRecommender.tsx:31-55](src/components/VacationRecommender/VacationRecommender.tsx#L31-L55)):
+1. Generate 10,000 candidates using `generateVacationRecommendations()`
+2. Apply trip length filter (all/short/long)
+3. Take top 15 from filtered results
+
+**Rationale**:
+- Ensures filters see the full pool of possibilities
+- Prevents bias toward short or long trips in the generation phase
+- User can switch filters without regenerating the entire pool (thanks to `useMemo`)
+
+**Performance Optimization**:
+- Uses `useMemo` to cache recommendations per year/filter combination
+- Only recalculates when dependencies change (year, trip length, holidays, work schedule)
+- Console logging shows pipeline steps: Generated → Filtered → Shown
+
+### Integration with Calendar
+**Decision**: "Add to Calendar" button directly creates vacation from recommendation.
+
+**User Flow**:
+1. User browses recommendations
+2. Clicks "Add to Calendar" on a recommendation
+3. `onSelectRecommendation` callback creates PlannedVacation from recommendation data
+4. Vacation appears immediately in calendar and balance calculations
+5. User can edit/delete like any manually-created vacation
+
+**Benefits**:
+- Seamless workflow from discovery to planning
+- No manual date entry required
+- Instant visual feedback in calendar
+
+### No Deduplication
+**Decision**: Do not deduplicate overlapping vacation recommendations.
+
+**Rationale** (per user request):
+- User may want to see multiple options for the same general timeframe
+- Different lengths and start/end dates have different hour costs
+- Allows user to compare trade-offs (e.g., 5 days vs. 7 days starting same week)
+- Sorting by composite score naturally bubbles best options to top
+
 ## Validation and Error Handling
 
 ### Negative Balance Prevention
@@ -369,6 +571,14 @@ When making changes, manually test:
 10. **Holiday versioning**: Update holiday version and verify existing users get new data
 11. **Data migration**: Test that old profiles auto-migrate (e.g., even-fridays → odd-fridays)
 12. **Multi-month views**: Test 1, 2, 6, and 12-month calendar views on various screen sizes
+13. **Vacation Recommendations**:
+   - Verify composite scoring produces sensible rankings
+   - Test bracketed vacation detection with various configurations
+   - Confirm year selector defaults to next year in Q4
+   - Test trip length filter (short/long) produces correct results
+   - Verify "Add to Calendar" button creates vacations correctly
+   - Check that recommendations update when work schedule or holidays change
+   - Test score visualization progress bars display correctly
 
 ## Key Files Reference
 
@@ -379,6 +589,7 @@ When making changes, manually test:
 - [src/utils/balanceCalculator.ts](src/utils/balanceCalculator.ts) - Week-by-week balance projection with Personal Day rollover
 - [src/utils/calendarDataMapper.ts](src/utils/calendarDataMapper.ts) - Maps weekly data to daily calendar tiles
 - [src/utils/holidayLoader.ts](src/utils/holidayLoader.ts) - Schedule-aware holiday filtering
+- [src/utils/vacationRecommender.ts](src/utils/vacationRecommender.ts) - Vacation recommendation engine with composite scoring
 
 ### Components
 - [src/components/WelcomeScreen/WelcomeScreen.tsx](src/components/WelcomeScreen/WelcomeScreen.tsx) - Initial user entry point
@@ -386,6 +597,8 @@ When making changes, manually test:
 - [src/components/Calendar/CalendarView.tsx](src/components/Calendar/CalendarView.tsx) - Multi-month interactive calendar
 - [src/components/Calendar/VacationEditModal.tsx](src/components/Calendar/VacationEditModal.tsx) - Vacation editor with Personal Day toggle
 - [src/components/Calendar/CalendarLegend.tsx](src/components/Calendar/CalendarLegend.tsx) - Legend including 'P' indicator
+- [src/components/VacationRecommender/VacationRecommender.tsx](src/components/VacationRecommender/VacationRecommender.tsx) - Vacation recommendation UI with score visualization
+- [src/components/VacationRecommender/VacationRecommender.css](src/components/VacationRecommender/VacationRecommender.css) - Styling for recommendation cards and progress bars
 
 ### Data & Configuration
 - [src/data/holidays.json](src/data/holidays.json) - Holiday definitions for 2025-2028

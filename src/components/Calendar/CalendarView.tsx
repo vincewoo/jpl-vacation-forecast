@@ -15,6 +15,8 @@ import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import CalendarTile from './CalendarTile';
 import VacationEditModal from './VacationEditModal';
 import VacationListByYear from './VacationListByYear';
+import VacationRecommender from '../VacationRecommender/VacationRecommender';
+import { VacationRecommendation } from '../../utils/vacationRecommender';
 
 interface CalendarViewProps {
   weeklyBalances: WeeklyBalance[];
@@ -347,6 +349,32 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     }
   };
 
+  // Handle recommendation selection
+  const handleSelectRecommendation = (recommendation: VacationRecommendation) => {
+    // Validate affordability
+    const { canAfford, projectedBalance } = canAffordVacation({
+      startDate: recommendation.startDate,
+      endDate: recommendation.endDate,
+    });
+
+    if (!canAfford) {
+      setError(
+        `Insufficient balance. Need ${recommendation.vacationHours}h, will have ${projectedBalance.toFixed(2)}h`
+      );
+      return;
+    }
+
+    // Add the vacation
+    onAddVacation({
+      startDate: recommendation.startDate,
+      endDate: recommendation.endDate,
+      description: `Recommended: ${recommendation.context}`,
+    });
+
+    // Jump to the vacation date on the calendar
+    setActiveStartDate(parseDate(recommendation.startDate));
+  };
+
   // Generate array of months for multi-month views
   const generateMonthDates = useMemo(() => {
     const count =
@@ -492,6 +520,13 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           </div>
         ))}
       </div>
+
+      <VacationRecommender
+        userProfile={userProfile}
+        holidays={holidays}
+        plannedVacations={plannedVacations}
+        onSelectRecommendation={handleSelectRecommendation}
+      />
 
       <VacationEditModal
         vacation={editingVacation}

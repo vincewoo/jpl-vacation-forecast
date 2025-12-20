@@ -39,6 +39,16 @@ A web application for forecasting vacation hours at JPL (Jet Propulsion Laborato
   - Smart exclusion of weekends, holidays, and RDOs
   - Apply Personal Day to reduce vacation hours
 
+- **AI-Powered Vacation Recommendations**:
+  - **Smart vacation finder** that identifies optimal opportunities to maximize time off
+  - **Composite scoring system** balances efficiency, trip length, and strategic positioning
+  - **Bracketed vacation detection** finds dates that start/end on free days with workdays outside
+  - **Visual score breakdown** shows how each recommendation is rated
+  - **Filter by trip length** (short ≤7 days, long >7 days) or view all
+  - **Year selector** to plan for current year or future years
+  - **One-click booking** - add recommendations directly to your calendar
+  - **Top 15 ranked opportunities** per year, sorted by composite score
+
 - **Balance Tracking**:
   - Week-by-week balance forecast
   - Annual summaries with totals
@@ -164,6 +174,43 @@ This project is configured to deploy to GitHub Pages using the `gh-pages` packag
 - Modify dates, description, or Personal Day usage
 - Delete the vacation if needed
 
+### Using Vacation Recommendations
+
+The vacation recommendation system helps you find the best opportunities to maximize your time off while minimizing vacation hours used.
+
+**How to Use**:
+1. Click "See Vince's Top Picks!" to expand the recommendation panel
+2. **Select a year** to view recommendations for (defaults to next year if currently in Q4)
+3. **Filter by trip length** if desired:
+   - **All Lengths**: See all recommendations
+   - **Short (≤7 days)**: Perfect for long weekends and quick getaways
+   - **Long (>7 days)**: Ideal for extended trips and major vacations
+4. **Review the top 15 opportunities**, each showing:
+   - **Date range** for the vacation
+   - **Efficiency rating** (Excellent/Great/Good/Fair) based on days off per work day
+   - **Days off** you'll get vs. **vacation hours** required
+   - **Composite score** with visual breakdown showing:
+     - **Efficiency** (50% of score): Days off ÷ work days used
+     - **Bracketing** (25% of score): Whether it starts/ends optimally around free days
+     - **Trip length** (25% of score): Longer trips score higher
+   - **Tags** showing free days included (bracketed, weekends, holidays, RDOs)
+5. Click **"Add to Calendar"** to instantly add a recommendation to your vacation plan
+
+**Understanding the Scores**:
+- **Efficiency**: How much time off you get per vacation hour spent
+  - Excellent (3.0x+): e.g., 9 days off for 3 work days
+  - Great (2.0x+): e.g., 9 days off for 4.5 work days
+  - Good (1.5x+): e.g., 7 days off for 4.5 work days
+  - Fair (<1.5x): Standard vacation without special positioning
+- **Bracketed**: Vacations that start the day after your last workday and end the day before your next workday, maximizing consecutive time off
+- **Composite Score**: Overall ranking combining all factors (higher is better)
+
+**Tips**:
+- Recommendations around holidays, RDOs, and long weekends typically score highest
+- "Bracketed" vacations are especially valuable - they maximize your consecutive days off
+- Use the trip length filter to match your vacation style
+- Recommendations update automatically if you change your work schedule
+
 ### Viewing Balance Forecast
 
 - **Calendar Views**: Switch between 1, 2, 6, or 12-month views using the view controls
@@ -255,6 +302,9 @@ src/
 │   │   ├── CalendarLegend.tsx      # Legend with day type indicators
 │   │   ├── VacationEditModal.tsx   # Edit vacation modal
 │   │   └── Calendar.css            # Calendar styling
+│   ├── VacationRecommender/  # AI-powered vacation recommendations
+│   │   ├── VacationRecommender.tsx  # Recommendation UI with scoring
+│   │   └── VacationRecommender.css  # Recommendation card styling
 │   ├── BalanceTracker/  # Balance display and summaries
 │   └── CloudSync/       # Google authentication and sync
 ├── hooks/               # Custom React hooks
@@ -263,12 +313,13 @@ src/
 │   ├── useHolidays.ts
 │   └── useAuth.ts                # Google authentication
 ├── utils/               # Business logic
-│   ├── accrualCalculator.ts    # Continuous accrual with anniversary handling
-│   ├── balanceCalculator.ts    # Week-by-week projections with Personal Day rollover
-│   ├── dateUtils.ts            # Date formatting/parsing (local time)
-│   ├── workScheduleUtils.ts    # RDO and work hours
-│   ├── holidayLoader.ts        # Schedule-aware holiday filtering
-│   └── calendarDataMapper.ts   # Map weekly data to daily tiles
+│   ├── accrualCalculator.ts     # Continuous accrual with anniversary handling
+│   ├── balanceCalculator.ts     # Week-by-week projections with Personal Day rollover
+│   ├── dateUtils.ts             # Date formatting/parsing (local time)
+│   ├── workScheduleUtils.ts     # RDO and work hours
+│   ├── holidayLoader.ts         # Schedule-aware holiday filtering
+│   ├── calendarDataMapper.ts    # Map weekly data to daily tiles
+│   └── vacationRecommender.ts   # Composite scoring recommendation engine
 ├── data/                # Static data
 │   └── holidays.json    # Holiday definitions (2025-2028)
 ├── types/               # TypeScript interfaces
@@ -279,6 +330,7 @@ src/
 ## Recent Improvements
 
 ### Major Features Added
+- **AI-Powered Vacation Recommendations** (Dec 2025): Smart recommendation engine with composite scoring (efficiency + bracketing + length) to find optimal vacation opportunities
 - **Personal Day Management** (Dec 2025): Full implementation of JPL's 8-hour Personal Day with automatic rollover
 - **12-Month Calendar View** (Dec 2025): Added ability to view full year for long-term planning
 - **Welcome Screen** (Dec 2025): New user onboarding flow with options for new vs. existing users
