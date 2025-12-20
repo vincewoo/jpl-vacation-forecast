@@ -28,15 +28,6 @@ export const mapWeeklyBalancesToDays = (
 ): Map<string, CalendarDayInfo> => {
   const dayMap = new Map<string, CalendarDayInfo>();
 
-  // Debug: log the first few weekly balances
-  console.log('mapWeeklyBalancesToDays - Total weekly balances:', weeklyBalances.length);
-  if (weeklyBalances.length > 0) {
-    console.log('First 3 weekly balances:', weeklyBalances.slice(0, 3).map(wb => ({
-      weekEndDate: wb.weekEndDate,
-      endingBalance: wb.endingBalance
-    })));
-  }
-
   // Get all dates in the range
   const dates = getDatesInRange(startDate, endDate);
 
@@ -79,22 +70,10 @@ export const mapWeeklyBalancesToDays = (
       const weekBalance = weeklyBalances.find(wb => {
         const weekEndDate = parseDate(wb.weekEndDate);
         const match = formatDate(weekEndDate) === dateKey;
-        if (dateKey === '2026-01-04') {
-          console.log('Debug for 2026-01-04:', {
-            weekEndDate: wb.weekEndDate,
-            parsedWeekEndDate: weekEndDate,
-            formattedWeekEndDate: formatDate(weekEndDate),
-            dateKey,
-            match
-          });
-        }
         return match;
       });
       balance = weekBalance?.endingBalance;
       accrualRate = weekBalance?.accrued;
-      if (dateKey === '2026-01-04') {
-        console.log('Found balance for 2026-01-04:', balance, 'weekBalance:', weekBalance);
-      }
     }
 
     dayMap.set(dateKey, {
