@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
+import PrivacyNotice from '../PrivacyNotice/PrivacyNotice';
 import './WelcomeScreen.css';
 
 interface WelcomeScreenProps {
@@ -27,6 +28,8 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewUser }) => {
       <div className="welcome-content">
         <h2>Welcome to JPL Vacation Forecast</h2>
         <p className="welcome-subtitle">Track your vacation balance and plan your time off</p>
+
+        <PrivacyNotice context="welcome" />
 
         <div className="user-choice-container">
           <div className="choice-card">

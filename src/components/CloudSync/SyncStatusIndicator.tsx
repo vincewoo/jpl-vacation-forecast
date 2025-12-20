@@ -16,18 +16,18 @@ export function SyncStatusIndicator({ onClick }: SyncStatusIndicatorProps) {
     return null;
   }
 
-  if (!user) {
-    return null;
-  }
+  const isSignedIn = !!user;
+  const buttonText = isSignedIn ? 'Synced' : 'Sync';
+  const buttonTitle = isSignedIn ? 'Cloud sync enabled - Click to manage' : 'Click to enable cloud sync';
 
   return (
     <button
       className="sync-status-indicator"
-      title="Cloud sync enabled - Click to manage"
+      title={buttonTitle}
       onClick={onClick}
     >
       <span className="sync-icon">☁️</span>
-      <span className="sync-text">Synced</span>
+      <span className="sync-text">{buttonText}</span>
     </button>
   );
 }

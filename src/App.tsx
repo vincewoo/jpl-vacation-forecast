@@ -42,11 +42,18 @@ const App: React.FC = () => {
     return savedTheme === 'dark';
   });
 
-  // CloudSync panel visibility state - default to true so users see the cloud sync option
+  // CloudSync panel visibility state - open by default when not signed in, closed when signed in
   const [isCloudSyncPanelOpen, setIsCloudSyncPanelOpen] = useState(true);
 
   // User flow state - controls whether to show UserInputForm
   const [showUserForm, setShowUserForm] = useState(false);
+
+  // Close the CloudSync panel when user signs in (only on initial load)
+  useEffect(() => {
+    if (user && initialSyncComplete) {
+      setIsCloudSyncPanelOpen(false);
+    }
+  }, [user, initialSyncComplete]);
 
   // Apply theme class to document root
   useEffect(() => {

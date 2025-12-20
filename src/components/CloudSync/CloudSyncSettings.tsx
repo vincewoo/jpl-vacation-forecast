@@ -1,4 +1,5 @@
 import { useAuth } from '../../hooks/useAuth';
+import PrivacyNotice from '../PrivacyNotice/PrivacyNotice';
 import './CloudSyncSettings.css';
 
 interface CloudSyncSettingsProps {
@@ -55,6 +56,7 @@ export function CloudSyncSettings({ isOpen = true, onClose }: CloudSyncSettingsP
             </div>
           </div>
         </div>
+        <PrivacyNotice context="cloudsync" />
         <button onClick={signOut} className="sign-out-button">
           Disable Cloud Sync
         </button>
@@ -78,14 +80,9 @@ export function CloudSyncSettings({ isOpen = true, onClose }: CloudSyncSettingsP
           <div className="sync-description">
             Sign in with Google to sync your vacation data across multiple devices and browsers
           </div>
-          <ul className="sync-benefits">
-            <li>Access your data from any device</li>
-            <li>Automatic real-time sync</li>
-            <li>Your data remains private</li>
-            <li>Works offline - syncs when online</li>
-          </ul>
         </div>
       </div>
+      <PrivacyNotice context="cloudsync" />
       <button onClick={signInWithGoogle} className="sign-in-button">
         Sign in with Google
       </button>
