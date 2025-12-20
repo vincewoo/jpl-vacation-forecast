@@ -192,8 +192,8 @@ const findOpportunitiesAroundDate = (
 ): VacationRecommendation[] => {
   const recommendations: VacationRecommendation[] = [];
 
-  // Try different vacation lengths: 1-10 work days
-  const maxWorkDays = 10;
+  // Try different vacation lengths: 1-14 days (supports up to ~2.5 week vacations)
+  const maxWorkDays = 14;
 
   // Try extending before the anchor
   for (let daysBefore = 1; daysBefore <= maxWorkDays; daysBefore++) {
@@ -309,8 +309,9 @@ const findOpportunitiesAroundDate = (
   }
 
   // Try wrapping around the anchor (before and after)
-  for (let daysBefore = 1; daysBefore <= 5; daysBefore++) {
-    for (let daysAfter = 1; daysAfter <= 5; daysAfter++) {
+  // Allow up to 9 days on each side for ~2.5 week vacations (9 + 9 + 1 = 19 days max)
+  for (let daysBefore = 1; daysBefore <= 9; daysBefore++) {
+    for (let daysAfter = 1; daysAfter <= 9; daysAfter++) {
       const startDate = new Date(anchorDate);
       startDate.setDate(startDate.getDate() - daysBefore);
       const endDate = new Date(anchorDate);

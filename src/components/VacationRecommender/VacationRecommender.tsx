@@ -21,7 +21,7 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
   // Default to next year if we're in Q4, otherwise current year
   const defaultYear = new Date().getMonth() >= 9 ? new Date().getFullYear() + 1 : new Date().getFullYear();
   const [selectedYear, setSelectedYear] = useState<number>(defaultYear);
-  const [tripLengthFilter, setTripLengthFilter] = useState<'all' | 'short' | 'long'>('all');
+  const [tripLengthFilter, setTripLengthFilter] = useState<'all' | 'short' | 'medium' | 'long'>('all');
 
   // Generate recommendations for the selected year
   const recommendations = useMemo(() => {
@@ -42,10 +42,15 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     let filteredRecs = allRecs;
 
     // Filter by trip length
+    // Short: ≤7 days (up to 1 week)
+    // Medium: 8-14 days (1-2 weeks)
+    // Long: >14 days (2+ weeks)
     if (tripLengthFilter === 'short') {
       filteredRecs = filteredRecs.filter(rec => rec.totalDays <= 7);
+    } else if (tripLengthFilter === 'medium') {
+      filteredRecs = filteredRecs.filter(rec => rec.totalDays >= 8 && rec.totalDays <= 14);
     } else if (tripLengthFilter === 'long') {
-      filteredRecs = filteredRecs.filter(rec => rec.totalDays > 7);
+      filteredRecs = filteredRecs.filter(rec => rec.totalDays > 14);
     }
 
     // Return top 10 from the filtered results
@@ -72,14 +77,9 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     const start = parseDate(startDate);
     const end = parseDate(endDate);
 
-    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric' };
+    const options: Intl.DateTimeFormatOptions = { month: 'short', day: 'numeric', year: 'numeric' };
     const startStr = start.toLocaleDateString('en-US', options);
     const endStr = end.toLocaleDateString('en-US', options);
-
-    if (start.getMonth() === end.getMonth()) {
-      return `${start.toLocaleDateString('en-US', { month: 'short' })} ${start.getDate()}-${end.getDate()}`;
-    }
-
     return `${startStr} - ${endStr}`;
   };
 
@@ -156,19 +156,25 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
             className={tripLengthFilter === 'all' ? 'active' : ''}
             onClick={() => setTripLengthFilter('all')}
           >
-            All Lengths
+            All
           </button>
           <button
             className={tripLengthFilter === 'short' ? 'active' : ''}
             onClick={() => setTripLengthFilter('short')}
           >
-            Short (≤7 days)
+            Short (≤1 wk)
+          </button>
+          <button
+            className={tripLengthFilter === 'medium' ? 'active' : ''}
+            onClick={() => setTripLengthFilter('medium')}
+          >
+            Medium (1-2 wks)
           </button>
           <button
             className={tripLengthFilter === 'long' ? 'active' : ''}
             onClick={() => setTripLengthFilter('long')}
           >
-            Long (&gt;7 days)
+            Long (2+ wks)
           </button>
         </div>
       </div>
