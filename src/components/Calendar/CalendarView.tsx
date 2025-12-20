@@ -51,7 +51,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   );
   const [showEditModal, setShowEditModal] = useState(false);
   const [error, setError] = useState('');
-  const [viewMode, setViewMode] = useState<ViewMode>('2-month');
+  const [viewMode, setViewMode] = useState<ViewMode>(() => {
+    const savedViewMode = localStorage.getItem('jpl-vacation-calendar-view-mode');
+    return (savedViewMode as ViewMode) || '2-month';
+  });
   const [isDoubleView, setIsDoubleView] = useState(window.innerWidth >= 768);
   const [activeStartDate, setActiveStartDate] = useState<Date>(new Date());
   const [transitionDirection, setTransitionDirection] = useState<'forward' | 'backward' | null>(null);
@@ -338,6 +341,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
   // Handle view mode changes
   const handleViewModeChange = (mode: ViewMode) => {
     setViewMode(mode);
+    localStorage.setItem('jpl-vacation-calendar-view-mode', mode);
     if (mode === '2-month') {
       setIsDoubleView(window.innerWidth >= 768);
     }

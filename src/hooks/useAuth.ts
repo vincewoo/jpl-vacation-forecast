@@ -22,6 +22,8 @@ export interface UseAuthResult {
 const STORAGE_KEYS = [
   'jpl-vacation-user-profile',
   'jpl-vacation-planned-vacations',
+  'theme',
+  'jpl-vacation-calendar-view-mode',
 ];
 
 /**
