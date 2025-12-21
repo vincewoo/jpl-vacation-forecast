@@ -83,15 +83,16 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     return `${startStr} - ${endStr}`;
   };
 
-  const getEfficiencyLabel = (efficiency: number): { text: string; className: string } => {
-    // Efficiency = days off / work days used
-    // 3.0x+ = Excellent (e.g., 9 days off for 3 work days)
-    // 2.0x+ = Great (e.g., 9 days off for 4.5 work days)
-    // 1.5x+ = Good (e.g., 7 days off for 4.5 work days)
-    // <1.5x = Fair
-    if (efficiency >= 3.0) return { text: 'Excellent', className: 'excellent' };
-    if (efficiency >= 2.0) return { text: 'Great', className: 'great' };
-    if (efficiency >= 1.5) return { text: 'Good', className: 'good' };
+  const getScoreLabel = (score: number): { text: string; className: string } => {
+    // Score is based on composite formula (max 100):
+    // 50% efficiency, 25% bracketing, 25% length
+    // 80+ = Excellent (top tier opportunities)
+    // 65+ = Great (strong opportunities)
+    // 50+ = Good (solid opportunities)
+    // <50 = Fair (moderate opportunities)
+    if (score >= 80) return { text: 'Excellent', className: 'excellent' };
+    if (score >= 65) return { text: 'Great', className: 'great' };
+    if (score >= 50) return { text: 'Good', className: 'good' };
     return { text: 'Fair', className: 'fair' };
   };
 
@@ -199,7 +200,7 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
           </div>
 
           {recommendations.map((rec, index) => {
-            const efficiencyInfo = getEfficiencyLabel(rec.efficiency);
+            const scoreInfo = getScoreLabel(rec.score);
 
             return (
               <div key={rec.id} className="recommendation-card">
@@ -208,8 +209,8 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                   <div className="date-range">
                     {formatDateRange(rec.startDate, rec.endDate)}
                   </div>
-                  <div className={`efficiency-badge ${efficiencyInfo.className}`}>
-                    {efficiencyInfo.text}
+                  <div className={`efficiency-badge ${scoreInfo.className}`}>
+                    {scoreInfo.text}
                   </div>
                 </div>
 
