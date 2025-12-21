@@ -417,14 +417,6 @@ export const generateVacationRecommendations = (
   existingVacations: PlannedVacation[] = [],
   maxRecommendations: number = 10
 ): VacationRecommendation[] => {
-  console.log('[Recommender] Starting generation:', {
-    workSchedule,
-    holidayCount: holidays.length,
-    startDate: startDate.toISOString().split('T')[0],
-    endDate: endDate.toISOString().split('T')[0],
-    existingVacations: existingVacations.length
-  });
-
   const allRecommendations: VacationRecommendation[] = [];
 
   // Find all anchor dates (holidays and RDOs)
@@ -437,8 +429,6 @@ export const generateVacationRecommendations = (
       anchorDates.push(holidayDate);
     }
   }
-
-  console.log('[Recommender] Found anchor holidays:', anchorDates.length);
 
   // Add RDOs
   const rdos = findRDOsInRange(startDate, endDate, workSchedule);
@@ -456,8 +446,6 @@ export const generateVacationRecommendations = (
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  console.log('[Recommender] Total anchor dates:', anchorDates.length);
-
   // Find opportunities around each anchor
   for (const anchor of anchorDates) {
     const opportunities = findOpportunitiesAroundDate(
@@ -469,8 +457,6 @@ export const generateVacationRecommendations = (
     allRecommendations.push(...opportunities);
   }
 
-  console.log('[Recommender] All recommendations found:', allRecommendations.length);
-
   // Remove duplicates (same date range) - keep the one with highest score
   const uniqueRecommendations = new Map<string, VacationRecommendation>();
   for (const rec of allRecommendations) {
@@ -480,37 +466,6 @@ export const generateVacationRecommendations = (
       uniqueRecommendations.set(key, rec);
     }
   }
-
-  // Debug: Check for specific high-value recommendations
-  const thanksgivingRec = Array.from(uniqueRecommendations.values()).find(
-    r => r.startDate === '2026-11-21' && r.endDate === '2026-11-29'
-  );
-  if (thanksgivingRec) {
-    console.log('[Recommender] Found Nov 21-29:', thanksgivingRec);
-  }
-
-  const christmasRec = Array.from(uniqueRecommendations.values()).find(
-    r => r.startDate === '2026-12-19' && r.endDate === '2026-12-28'
-  );
-  if (christmasRec) {
-    console.log('[Recommender] Found Dec 19-28:', christmasRec);
-  } else {
-    // Check what December recommendations exist
-    const decRecs = Array.from(uniqueRecommendations.values()).filter(
-      r => r.startDate.startsWith('2026-12')
-    );
-    console.log('[Recommender] December 2026 recommendations:', decRecs.length);
-    if (decRecs.length > 0) {
-      console.log('[Recommender] Sample Dec recs:', decRecs.slice(0, 10).map(r => ({
-        dates: `${r.startDate} to ${r.endDate}`,
-        days: r.totalDays,
-        hours: r.vacationHours,
-        efficiency: r.efficiency.toFixed(2)
-      })));
-    }
-  }
-
-  console.log('[Recommender] Unique recommendations:', uniqueRecommendations.size);
 
   // Filter out recommendations that overlap with existing vacations
   const existingRanges = existingVacations.map(v => ({
@@ -528,20 +483,11 @@ export const generateVacationRecommendations = (
     });
   });
 
-  console.log('[Recommender] After filtering overlaps:', nonOverlapping.length);
-
   // Sort by composite score (higher is better)
   const sorted = nonOverlapping.sort((a, b) => b.score - a.score);
 
   // Return top N
-  const final = sorted.slice(0, maxRecommendations);
-
-  console.log('[Recommender] Final recommendations:', final.length);
-  if (final.length > 0) {
-    console.log('[Recommender] Top 3:', final.slice(0, 3));
-  }
-
-  return final;
+  return sorted.slice(0, maxRecommendations);
 };
 
 /**
@@ -566,11 +512,5 @@ export const testRecommender = () => {
     endDate
   );
 
-  console.log('Top 10 Vacation Recommendations:');
-  recommendations.forEach((rec, i) => {
-    console.log(`\n${i + 1}. ${rec.startDate} to ${rec.endDate}`);
-    console.log(`   ${rec.totalDays} days off for ${rec.vacationHours} hours`);
-    console.log(`   Efficiency: ${rec.efficiency.toFixed(2)} days/hour`);
-    console.log(`   ${rec.context}`);
-  });
+  return recommendations;
 };

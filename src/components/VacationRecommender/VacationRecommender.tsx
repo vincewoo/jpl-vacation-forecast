@@ -54,10 +54,7 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     }
 
     // Return top 10 from the filtered results
-    const recs = filteredRecs.slice(0, 10);
-
-    console.log('[VacationRecommender] Pipeline: Generated:', allRecs.length, '→ Filtered:', filteredRecs.length, '→ Shown:', recs.length);
-    return recs;
+    return filteredRecs.slice(0, 10);
   }, [userProfile.workSchedule, holidays, plannedVacations, selectedYear, tripLengthFilter]);
 
   const availableYears = useMemo(() => {
@@ -95,8 +92,6 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     if (score >= 50) return { text: 'Good', className: 'good' };
     return { text: 'Fair', className: 'fair' };
   };
-
-  console.log('[VacationRecommender] Rendering, isExpanded:', isExpanded, 'recommendations:', recommendations.length);
 
   if (!isExpanded) {
     return (
