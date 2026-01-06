@@ -62,12 +62,11 @@ export function useAuth(): UseAuthResult {
           // Try to load data from cloud first (in case user has data there)
           await storageService.syncFromCloud(STORAGE_KEYS);
         } catch (err) {
-          console.log('No cloud data found, will sync local data to cloud');
           // If no cloud data, sync local data to cloud
           try {
             await storageService.syncToCloud(STORAGE_KEYS);
           } catch (syncErr) {
-            console.error('Error syncing to cloud:', syncErr);
+            console.error('Error syncing to cloud');
           }
         } finally {
           // Mark sync as complete regardless of success/failure
@@ -104,8 +103,6 @@ export function useAuth(): UseAuthResult {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
 
-      console.log('Signed in as:', result.user.email);
-
       // Enable cloud sync
       storageService.setMode('cloud-sync', result.user.uid);
 
@@ -114,7 +111,7 @@ export function useAuth(): UseAuthResult {
 
       setUser(result.user);
     } catch (err: any) {
-      console.error('Sign in error:', err);
+      console.error('Sign in error');
       setError(err.message || 'Failed to sign in');
       storageService.setMode('localStorage');
     } finally {
@@ -145,9 +142,8 @@ export function useAuth(): UseAuthResult {
       storageService.setMode('localStorage');
 
       setUser(null);
-      console.log('Signed out successfully');
     } catch (err: any) {
-      console.error('Sign out error:', err);
+      console.error('Sign out error');
       setError(err.message || 'Failed to sign out');
     } finally {
       setLoading(false);

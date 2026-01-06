@@ -35,8 +35,6 @@ export class StorageService {
     if (wasCloudSync && mode === 'localStorage') {
       this.cleanupFirebaseListeners();
     }
-
-    console.log(`Storage mode set to: ${mode}`, userId ? `User: ${userId}` : '');
   }
 
   /**
@@ -93,7 +91,6 @@ export class StorageService {
             value,
             updatedAt: new Date().toISOString(),
           });
-          console.log(`Synced ${key} to Firebase`);
         }
       } catch (error) {
         console.error(`Error writing ${key} to Firebase:`, error);
@@ -163,7 +160,6 @@ export class StorageService {
             value,
             updatedAt: new Date().toISOString(),
           });
-          console.log(`Initial sync of ${key} to Firebase`);
         }
       } catch (error) {
         console.error(`Error syncing ${key} to Firebase:`, error);
@@ -192,7 +188,6 @@ export class StorageService {
         if (docSnap.exists()) {
           const data = docSnap.data();
           window.localStorage.setItem(key, JSON.stringify(data.value));
-          console.log(`Loaded ${key} from Firebase to localStorage`);
           this.notifyListeners(key, data.value);
         }
       } catch (error) {
@@ -222,8 +217,6 @@ export class StorageService {
 
           // Notify listeners
           this.notifyListeners(key, value);
-
-          console.log(`Real-time update for ${key} from Firebase`);
         }
       }, (error) => {
         console.error(`Firebase listener error for ${key}:`, error);

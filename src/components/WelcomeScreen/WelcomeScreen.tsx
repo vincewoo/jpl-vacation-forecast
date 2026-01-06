@@ -18,7 +18,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewUser }) => {
       // After sign-in, the auth state change will trigger cloud sync
       // and the App component will handle the transition
     } catch (err) {
-      console.error('Sign-in error:', err);
+      console.error('Sign-in error');
       setSigningIn(false);
     }
   };
