@@ -34,7 +34,6 @@ export const isFirebaseConfigured = (): boolean => {
  */
 export const initializeFirebase = () => {
   if (!isFirebaseConfigured()) {
-    console.log('Firebase not configured - cloud sync disabled');
     return { app: null, auth: null, db: null };
   }
 
@@ -43,7 +42,6 @@ export const initializeFirebase = () => {
       app = initializeApp(firebaseConfig);
       auth = getAuth(app);
       db = getFirestore(app);
-      console.log('Firebase initialized successfully');
     }
     return { app, auth, db };
   } catch (error) {

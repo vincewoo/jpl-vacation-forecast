@@ -93,7 +93,6 @@ const App: React.FC = () => {
 
     // Check version match
     if (storedVersion !== currentVersion) {
-      console.log(`Holiday version mismatch (stored: ${storedVersion}, current: ${currentVersion}). Updating...`);
       updateHolidays();
       return;
     }
@@ -108,7 +107,6 @@ const App: React.FC = () => {
       });
 
     if (hasDifferentHours) {
-      console.log('Work schedule mismatch detected in holidays. Updating...');
       updateHolidays();
       return;
     }
