@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile, ScheduleType } from '../../types';
+import { parseDate } from '../../utils/dateUtils';
 import './UserInputForm.css';
 
 interface UserInputFormProps {
@@ -13,6 +14,19 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
   const [balanceAsOfDate, setBalanceAsOfDate] = useState('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('5/40');
   const [personalDayUsedInStartYear, setPersonalDayUsedInStartYear] = useState(false);
+
+  // Check if selected balanceAsOfDate is a Sunday
+  const isSunday = (dateStr: string) => {
+    if (!dateStr) return true;
+    try {
+      const date = parseDate(dateStr);
+      return date.getDay() === 0;
+    } catch {
+      return true; // Ignore parse errors for UI warning
+    }
+  };
+
+  const showSundayWarning = balanceAsOfDate && !isSunday(balanceAsOfDate);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -76,8 +90,20 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             value={balanceAsOfDate}
             onChange={(e) => setBalanceAsOfDate(e.target.value)}
             required
+            aria-invalid={showSundayWarning ? 'true' : 'false'}
+            aria-describedby={showSundayWarning ? 'sunday-warning' : undefined}
           />
-          <small>When was this balance taken? Should be the start of a week (Sunday)</small>
+          {showSundayWarning ? (
+            <small
+              id="sunday-warning"
+              className="warning-text"
+              role="alert"
+            >
+              ⚠️ Warning: Selected date is not a Sunday. Weekly calculations may be inaccurate.
+            </small>
+          ) : (
+            <small>When was this balance taken? Should be the start of a week (Sunday)</small>
+          )}
         </div>
 
         <div className="form-group checkbox-group">

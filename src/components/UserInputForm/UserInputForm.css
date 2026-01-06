@@ -80,6 +80,12 @@
   font-size: 0.875rem;
 }
 
+/* Added for warning text */
+.form-group .warning-text {
+  color: var(--error, #e53e3e);
+  font-weight: bold;
+}
+
 .checkbox-group {
   display: flex;
   flex-direction: column;
