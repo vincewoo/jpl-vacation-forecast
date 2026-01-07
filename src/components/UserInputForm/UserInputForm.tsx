@@ -64,8 +64,10 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             value={startDate}
             onChange={(e) => setStartDate(e.target.value)}
             required
+            autoFocus
+            aria-describedby="startDate-help"
           />
-          <small>This determines your vacation accrual rate</small>
+          <small id="startDate-help">This determines your vacation accrual rate</small>
         </div>
 
         <div className="form-group">
@@ -78,8 +80,9 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             min="0"
             step="0.01"
             required
+            aria-describedby="currentBalance-help"
           />
-          <small>Include any carryover from previous year</small>
+          <small id="currentBalance-help">Include any carryover from previous year</small>
         </div>
 
         <div className="form-group">
@@ -91,7 +94,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             onChange={(e) => setBalanceAsOfDate(e.target.value)}
             required
             aria-invalid={showSundayWarning ? 'true' : 'false'}
-            aria-describedby={showSundayWarning ? 'sunday-warning' : undefined}
+            aria-describedby={showSundayWarning ? 'sunday-warning' : 'balanceAsOfDate-help'}
           />
           {showSundayWarning ? (
             <small
@@ -102,7 +105,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
               ⚠️ Warning: Selected date is not a Sunday. Weekly calculations may be inaccurate.
             </small>
           ) : (
-            <small>When was this balance taken? Should be the start of a week (Sunday)</small>
+            <small id="balanceAsOfDate-help">When was this balance taken? Should be the start of a week (Sunday)</small>
           )}
         </div>
 
@@ -112,10 +115,11 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
               type="checkbox"
               checked={personalDayUsedInStartYear}
               onChange={(e) => setPersonalDayUsedInStartYear(e.target.checked)}
+              aria-describedby="personalDay-help"
             />
             <span>I already used my Personal Day this year</span>
           </label>
-          <small>
+          <small id="personalDay-help">
             Check this if you took a personal day before {balanceAsOfDate || 'your balance date'}
           </small>
         </div>
