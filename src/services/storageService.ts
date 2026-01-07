@@ -1,5 +1,6 @@
 import { doc, setDoc, getDoc, onSnapshot, Unsubscribe } from 'firebase/firestore';
 import { getFirebaseDb } from '../config/firebase';
+import { logError } from '../utils/logger';
 
 export type StorageMode = 'localStorage' | 'cloud-sync';
 
@@ -48,7 +49,7 @@ export class StorageService {
         return JSON.parse(localItem);
       }
     } catch (error) {
-      console.error(`Error reading ${key} from localStorage:`, error);
+      logError(`Error reading ${key} from localStorage`, error);
     }
 
     // If in cloud sync mode and have userId, try Firebase
@@ -63,7 +64,7 @@ export class StorageService {
           }
         }
       } catch (error) {
-        console.error(`Error reading ${key} from Firebase:`, error);
+        logError(`Error reading ${key} from Firebase`, error);
       }
     }
 
@@ -78,7 +79,7 @@ export class StorageService {
     try {
       window.localStorage.setItem(key, JSON.stringify(value));
     } catch (error) {
-      console.error(`Error writing ${key} to localStorage:`, error);
+      logError(`Error writing ${key} to localStorage`, error);
     }
 
     // If in cloud sync mode, also write to Firebase
@@ -93,7 +94,7 @@ export class StorageService {
           });
         }
       } catch (error) {
-        console.error(`Error writing ${key} to Firebase:`, error);
+        logError(`Error writing ${key} to Firebase`, error);
         // Don't throw - localStorage write succeeded
       }
     }
@@ -162,7 +163,7 @@ export class StorageService {
           });
         }
       } catch (error) {
-        console.error(`Error syncing ${key} to Firebase:`, error);
+        logError(`Error syncing ${key} to Firebase`, error);
       }
     }
   }
@@ -191,7 +192,7 @@ export class StorageService {
           this.notifyListeners(key, data.value);
         }
       } catch (error) {
-        console.error(`Error loading ${key} from Firebase:`, error);
+        logError(`Error loading ${key} from Firebase`, error);
       }
     }
   }
@@ -219,12 +220,12 @@ export class StorageService {
           this.notifyListeners(key, value);
         }
       }, (error) => {
-        console.error(`Firebase listener error for ${key}:`, error);
+        logError(`Firebase listener error for ${key}`, error);
       });
 
       this.unsubscribers.set(key, unsubscribe);
     } catch (error) {
-      console.error(`Error setting up Firebase listener for ${key}:`, error);
+      logError(`Error setting up Firebase listener for ${key}`, error);
     }
   }
 
@@ -238,7 +239,7 @@ export class StorageService {
         try {
           listener(value);
         } catch (error) {
-          console.error('Error in storage listener:', error);
+          logError('Error in storage listener', error);
         }
       });
     }

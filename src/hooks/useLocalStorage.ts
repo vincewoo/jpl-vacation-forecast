@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { storageService } from '../services/storageService';
+import { logError } from '../utils/logger';
 
 /**
  * Custom hook for localStorage persistence with optional cloud sync support
@@ -19,7 +20,7 @@ export function useLocalStorage<T>(
       const item = window.localStorage.getItem(key);
       return item ? JSON.parse(item) : initialValue;
     } catch (error) {
-      console.error(`Error loading ${key} from localStorage:`, error);
+      logError(`Error loading ${key} from localStorage`, error);
       return initialValue;
     }
   });
@@ -43,10 +44,10 @@ export function useLocalStorage<T>(
 
       // Use storage service which handles both localStorage and cloud sync
       storageService.set(key, valueToStore).catch(error => {
-        console.error(`Error saving ${key}:`, error);
+        logError(`Error saving ${key}`, error);
       });
     } catch (error) {
-      console.error(`Error saving ${key}:`, error);
+      logError(`Error saving ${key}`, error);
     }
   };
 
