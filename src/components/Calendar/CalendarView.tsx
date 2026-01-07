@@ -409,7 +409,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         )}
 
         {error && (
-          <div className="error-banner">
+          <div className="error-banner" role="alert">
             {error}
             <button onClick={() => setError('')} className="close-error">
               ×

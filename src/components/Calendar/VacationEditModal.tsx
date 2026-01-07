@@ -194,7 +194,7 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
             */}
           </div>
 
-          <div className="hours-estimate">
+          <div className="hours-estimate" aria-live="polite">
             <strong>Hours needed:</strong> {hours.toFixed(2)}
           </div>
 
