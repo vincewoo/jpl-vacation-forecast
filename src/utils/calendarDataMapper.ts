@@ -9,8 +9,7 @@ import {
 import {
   getDatesInRange,
   parseDate,
-  formatDate,
-  isDateInRange
+  formatDate
 } from './dateUtils';
 import { isWeekend, isRDO, getWorkHoursForDay, getVacationHours } from './workScheduleUtils';
 
@@ -28,11 +27,35 @@ export const mapWeeklyBalancesToDays = (
 ): Map<string, CalendarDayInfo> => {
   const dayMap = new Map<string, CalendarDayInfo>();
 
+  // Optimize lookups
+  const holidayMap = new Map<string, Holiday>();
+  holidays.forEach(h => holidayMap.set(h.date, h));
+
+  const weeklyBalanceMap = new Map<string, WeeklyBalance>();
+  weeklyBalances.forEach(wb => {
+    // We map by week end date string as that's what's queried for Sundays
+    const key = formatDate(parseDate(wb.weekEndDate));
+    weeklyBalanceMap.set(key, wb);
+  });
+
+  // Optimize vacation ranges
+  // Store start/end as timestamps for fast comparison
+  const processedVacations = plannedVacations.map(v => {
+    const start = parseDate(v.startDate);
+    return {
+      original: v,
+      start: start.getTime(),
+      end: parseDate(v.endDate).getTime(),
+      startDateKey: formatDate(start) // Pre-calculate for isPersonalDayStart check
+    };
+  });
+
   // Get all dates in the range
   const dates = getDatesInRange(startDate, endDate);
 
   for (const date of dates) {
     const dateKey = formatDate(date);
+    const dateTime = date.getTime();
     const types: DayType[] = [];
 
     // Check if weekend
@@ -47,16 +70,14 @@ export const mapWeeklyBalancesToDays = (
     }
 
     // Check if holiday
-    const holiday = holidays.find(h => h.date === dateKey);
+    const holiday = holidayMap.get(dateKey);
     if (holiday) {
       types.push(DayType.HOLIDAY);
     }
 
     // Check if in vacation
-    const vacation = plannedVacations.find(v => {
-      const vacStart = parseDate(v.startDate);
-      const vacEnd = parseDate(v.endDate);
-      return isDateInRange(date, vacStart, vacEnd);
+    const vacation = processedVacations.find(v => {
+      return dateTime >= v.start && dateTime <= v.end;
     });
 
     if (vacation) {
@@ -67,11 +88,7 @@ export const mapWeeklyBalancesToDays = (
     let balance: number | undefined;
     let accrualRate: number | undefined;
     if (date.getDay() === 0) { // Sunday
-      const weekBalance = weeklyBalances.find(wb => {
-        const weekEndDate = parseDate(wb.weekEndDate);
-        const match = formatDate(weekEndDate) === dateKey;
-        return match;
-      });
+      const weekBalance = weeklyBalanceMap.get(dateKey);
       balance = weekBalance?.endingBalance;
       accrualRate = weekBalance?.accrued;
     }
@@ -80,15 +97,15 @@ export const mapWeeklyBalancesToDays = (
       date,
       types,
       hours: getWorkHoursForDay(date, workSchedule),
-      vacationHours: vacation ? getVacationHours(vacation, workSchedule, holidays) : undefined,
+      vacationHours: vacation ? getVacationHours(vacation.original, workSchedule, holidays) : undefined,
       balance,
       accrualRate,
       isInVacation: !!vacation,
-      vacationId: vacation?.id,
+      vacationId: vacation?.original.id,
       isHoliday: !!holiday,
       holidayName: holiday?.name,
       isRDO: isRDODay,
-      isPersonalDayStart: vacation?.personalDayUsed && formatDate(parseDate(vacation.startDate)) === dateKey,
+      isPersonalDayStart: vacation?.original.personalDayUsed && vacation.startDateKey === dateKey,
     });
   }
 
