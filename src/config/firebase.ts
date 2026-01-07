@@ -1,6 +1,7 @@
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import { getAuth, Auth } from 'firebase/auth';
 import { getFirestore, Firestore } from 'firebase/firestore';
+import { logError } from '../utils/logger';
 
 // Firebase configuration using environment variables
 // These will be set in .env.local file (not committed to git)
@@ -45,7 +46,7 @@ export const initializeFirebase = () => {
     }
     return { app, auth, db };
   } catch (error) {
-    console.error('Failed to initialize Firebase:', error);
+    logError('Failed to initialize Firebase', error);
     return { app: null, auth: null, db: null };
   }
 };
