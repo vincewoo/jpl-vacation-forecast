@@ -195,11 +195,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     setError('');
   };
 
-  // Handle ESC key to cancel selection
+  // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input or textarea
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === 'INPUT' ||
+        target.tagName === 'TEXTAREA' ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
       if (e.key === 'Escape') {
         cancelSelection();
+      } else if (e.key === 'ArrowLeft') {
+        e.preventDefault();
+        setTransitionDirection('backward');
+        setActiveStartDate(
+          (prev) => new Date(prev.getFullYear(), prev.getMonth() - 1, 1)
+        );
+        setTimeout(() => setTransitionDirection(null), 600);
+      } else if (e.key === 'ArrowRight') {
+        e.preventDefault();
+        setTransitionDirection('forward');
+        setActiveStartDate(
+          (prev) => new Date(prev.getFullYear(), prev.getMonth() + 1, 1)
+        );
+        setTimeout(() => setTransitionDirection(null), 600);
       }
     };
 
@@ -451,23 +475,35 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       <div className="calendar-navigation-controls">
         <button
           onClick={() => {
-            const newDate = new Date(activeStartDate.getFullYear(), activeStartDate.getMonth() - 1, 1);
+            const newDate = new Date(
+              activeStartDate.getFullYear(),
+              activeStartDate.getMonth() - 1,
+              1
+            );
             setTransitionDirection('backward');
             setActiveStartDate(newDate);
             setTimeout(() => setTransitionDirection(null), 600);
           }}
           className="calendar-nav-button"
+          title="Previous Month (Left Arrow)"
+          aria-label="Previous Month"
         >
           ‹ Previous
         </button>
         <button
           onClick={() => {
-            const newDate = new Date(activeStartDate.getFullYear(), activeStartDate.getMonth() + 1, 1);
+            const newDate = new Date(
+              activeStartDate.getFullYear(),
+              activeStartDate.getMonth() + 1,
+              1
+            );
             setTransitionDirection('forward');
             setActiveStartDate(newDate);
             setTimeout(() => setTransitionDirection(null), 600);
           }}
           className="calendar-nav-button"
+          title="Next Month (Right Arrow)"
+          aria-label="Next Month"
         >
           Next ›
         </button>
