@@ -9,16 +9,26 @@ import { logError } from '../utils/logger';
  * - By default, uses localStorage (same as before)
  * - When user enables cloud sync, automatically syncs to Firebase
  * - Listens for real-time updates from other devices
+ * - Validates data integrity when loading from storage or receiving updates
  */
 export function useLocalStorage<T>(
   key: string,
-  initialValue: T
+  initialValue: T,
+  validator?: (data: any) => boolean
 ): [T, (value: T | ((val: T) => T)) => void] {
   // State to store our value
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(key);
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+        const parsed = JSON.parse(item);
+        if (validator && !validator(parsed)) {
+          logError(`Validation failed for ${key} in localStorage`, { value: parsed });
+          return initialValue;
+        }
+        return parsed;
+      }
+      return initialValue;
     } catch (error) {
       logError(`Error loading ${key} from localStorage`, error);
       return initialValue;
@@ -28,11 +38,15 @@ export function useLocalStorage<T>(
   // Subscribe to storage changes (from Firebase real-time sync)
   useEffect(() => {
     const unsubscribe = storageService.subscribe<T>(key, (newValue) => {
+      if (validator && !validator(newValue)) {
+        logError(`Validation failed for update to ${key}`, { value: newValue });
+        return; // Ignore invalid updates
+      }
       setStoredValue(newValue);
     });
 
     return unsubscribe;
-  }, [key]);
+  }, [key, validator]);
 
   // Return a wrapped version of useState's setter function that
   // persists the new value to storage (localStorage + optional cloud sync)
@@ -40,6 +54,8 @@ export function useLocalStorage<T>(
     try {
       // Allow value to be a function so we have same API as useState
       const valueToStore = value instanceof Function ? value(storedValue) : value;
+
+      // We assume data created by the app itself is valid, but we could validte here too if paranoid
       setStoredValue(valueToStore);
 
       // Use storage service which handles both localStorage and cloud sync

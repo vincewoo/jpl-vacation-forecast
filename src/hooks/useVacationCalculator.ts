@@ -9,21 +9,34 @@ import {
 import { calculateWeeklyBalances, calculateAnnualSummary, calculateProjectedBalance } from '../utils/balanceCalculator';
 import { parseDate } from '../utils/dateUtils';
 import { useLocalStorage } from './useLocalStorage';
+import {
+  isValidUserProfile,
+  isValidPlannedVacationArray,
+  isValidHolidayArray
+} from '../utils/validation';
+
+// Validator for user profile (handles null as valid initial state)
+const isValidUserProfileOrNull = (data: any): boolean => {
+  return data === null || isValidUserProfile(data);
+};
 
 export const useVacationCalculator = () => {
   const [userProfile, setUserProfile] = useLocalStorage<UserProfile | null>(
     'jpl-vacation-user-profile',
-    null
+    null,
+    isValidUserProfileOrNull
   );
 
   const [plannedVacations, setPlannedVacations] = useLocalStorage<PlannedVacation[]>(
     'jpl-vacation-planned-vacations',
-    []
+    [],
+    isValidPlannedVacationArray
   );
 
   const [holidays, setHolidays] = useLocalStorage<Holiday[]>(
     'jpl-vacation-holidays',
-    []
+    [],
+    isValidHolidayArray
   );
 
   // Migration: Ensure all 9/80 users are on "odd-fridays" pattern
