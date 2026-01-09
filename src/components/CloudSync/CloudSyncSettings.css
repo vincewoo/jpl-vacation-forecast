@@ -32,6 +32,34 @@
   text-align: center;
   padding: 40px;
   color: var(--text-secondary);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Spinner styles */
+.cloud-sync-settings .spinner {
+  width: 40px;
+  height: 40px;
+  margin: 0 auto 16px;
+  border: 3px solid var(--border-color, #e0e0e0);
+  border-top-color: var(--primary-color, #0066cc);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+/* Use existing keyframes if available, or define locally to be safe */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Dark mode support for spinner */
+:root.dark .cloud-sync-settings .spinner {
+  border-color: var(--border-color-dark, #444);
+  border-top-color: var(--primary-color-dark, #4da6ff);
 }
 
 .sync-status,
