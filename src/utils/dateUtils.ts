@@ -46,18 +46,30 @@ export const getWeeksInRange = (startDate: Date, endDate: Date): Date[] => {
 
 /**
  * Format date as YYYY-MM-DD using local time
+ * Optimized to avoid intermediate string allocations and padding overhead
  */
 export const formatDate = (date: Date): string => {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  return `${year}-${month < 10 ? '0' + month : month}-${day < 10 ? '0' + day : day}`;
 };
 
 /**
  * Parse ISO date string (YYYY-MM-DD) to Date object in local time
+ * Optimized with a fast path for standard YYYY-MM-DD format
  */
 export const parseDate = (dateString: string): Date => {
+  // Fast path for standard YYYY-MM-DD format
+  // This avoids array allocation (split) and mapping
+  if (dateString.length === 10 && dateString.charAt(4) === '-' && dateString.charAt(7) === '-') {
+    const year = +dateString.substring(0, 4);
+    const month = +dateString.substring(5, 7);
+    const day = +dateString.substring(8, 10);
+    return new Date(year, month - 1, day);
+  }
+
+  // Fallback for other formats (e.g. 2023-1-1)
   const [year, month, day] = dateString.split('-').map(Number);
   // Ensure we have valid numbers
   if (year === undefined || month === undefined || day === undefined) {
