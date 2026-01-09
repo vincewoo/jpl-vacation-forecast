@@ -26,13 +26,19 @@ export function CloudSyncSettings({ isOpen = true, onClose }: CloudSyncSettingsP
 
   if (loading) {
     return (
-      <div className="cloud-sync-settings loading">
+      <div
+        className="cloud-sync-settings loading"
+        aria-busy="true"
+        aria-live="polite"
+        role="status"
+      >
         {onClose && (
           <button onClick={onClose} className="close-button" aria-label="Close">
             ✕
           </button>
         )}
-        <p>Loading...</p>
+        <div className="spinner"></div>
+        <p>Connecting to cloud...</p>
       </div>
     );
   }
