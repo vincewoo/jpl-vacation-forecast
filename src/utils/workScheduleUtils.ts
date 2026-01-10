@@ -10,25 +10,79 @@ export const isWeekend = (date: Date): boolean => {
   return day === 0 || day === 6; // Sunday or Saturday
 };
 
+// Cache for first Thursday timestamps to avoid Date construction in loop
+const firstThursdayCache = new Map<number, number>();
+
+/**
+ * Get the timestamp of the first Thursday of the ISO year.
+ * Optimized with caching.
+ */
+const getFirstThursdayOfYearTimestamp = (year: number): number => {
+  const cached = firstThursdayCache.get(year);
+  if (cached !== undefined) {
+    return cached;
+  }
+
+  // ISO Week 1 is the week containing Jan 4.
+  // We need the Thursday of that week.
+  // 1. Find Jan 4.
+  const jan4 = new Date(year, 0, 4);
+
+  // 2. Find day of week of Jan 4 (0=Sun, 1=Mon, ..., 6=Sat).
+  // Note: getDay() returns 0 for Sunday, but ISO treats Monday as 1, Sunday as 7.
+  const jan4Day = jan4.getDay() || 7;
+
+  // 3. The Thursday (4) is relative to Jan 4.
+  // If Jan 4 is Thu (4), offset is 0.
+  // If Jan 4 is Mon (1), Thursday is +3 days.
+  // If Jan 4 is Sun (7), Thursday was -3 days (Jan 1).
+  // Offset = 4 - jan4Day.
+  const offsetDays = 4 - jan4Day;
+
+  // 4. Calculate timestamp directly.
+  const firstThursdayTs = jan4.getTime() + (offsetDays * 86400000);
+
+  firstThursdayCache.set(year, firstThursdayTs);
+  return firstThursdayTs;
+};
+
+const ONE_WEEK_MS = 604800000; // 7 * 24 * 60 * 60 * 1000
+
 /**
  * Check if a Friday is an RDO based on the pattern
- * Uses ISO week numbering for consistency
+ * Optimized to avoid Date allocations and fix edge case bugs in original implementation.
+ * Uses ISO week numbering logic (Week 1 is the week containing Jan 4).
  */
 export const isRDOFriday = (date: Date, rdoPattern: string): boolean => {
   if (date.getDay() !== 5) return false; // Not a Friday
 
-  // Get ISO week number (week starts on Monday)
-  const getISOWeekNumber = (d: Date): number => {
-    const target = new Date(d.valueOf());
-    const dayNumber = (d.getDay() + 6) % 7;
-    target.setDate(target.getDate() - dayNumber + 3);
-    const firstThursday = new Date(target.getFullYear(), 0, 4);
-    const diff = target.getTime() - firstThursday.getTime();
-    const oneWeek = 1000 * 60 * 60 * 24 * 7;
-    return 1 + Math.floor(diff / oneWeek);
-  };
+  // We need to find the ISO Week Number.
+  // ISO Week Number = 1 + round((ThursdayOfThisWeek - ThursdayOfWeek1) / 7 days)
 
-  const weekNumber = getISOWeekNumber(date);
+  // 1. Find the Thursday of the current week.
+  // Since input is Friday, Thursday is 1 day before.
+  // Note: date.getTime() is UTC timestamp. This is safe for diffing.
+  const thursdayTs = date.getTime() - 86400000; // -24 hours
+
+  // 2. Determine the ISO Year.
+  // The ISO Year is the year of the Thursday.
+  // Usually this is date.getFullYear().
+  // Exception: If date is Jan 1 (Friday), Thursday is Dec 31 (Prev Year).
+  let isoYear = date.getFullYear();
+  if (date.getMonth() === 0 && date.getDate() === 1) {
+    isoYear--;
+  }
+
+  // 3. Get the First Thursday of the ISO Year.
+  const firstThursdayTs = getFirstThursdayOfYearTimestamp(isoYear);
+
+  // 4. Calculate week number.
+  // Math.round is used to handle potential DST shifts if crossing boundaries,
+  // although diffing timestamps usually works if aligned.
+  // Note: timestamps are consistent (UTC-based).
+  const diff = thursdayTs - firstThursdayTs;
+  const weekNumber = 1 + Math.round(diff / ONE_WEEK_MS);
+
   const isEvenWeek = weekNumber % 2 === 0;
 
   return rdoPattern === 'even-fridays' ? isEvenWeek : !isEvenWeek;
