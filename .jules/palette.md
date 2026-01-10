@@ -5,3 +5,7 @@
 ## 2025-01-09 - Accessible Loading States
 **Learning:** Static "Loading..." text is visually jarring and often missed. Spinners provide better feedback but must be accessible.
 **Action:** Use CSS animations for spinners and wrap them in a container with `aria-busy="true"`, `aria-live="polite"`, and `role="status"` to announce state changes to screen readers.
+
+## 2025-01-10 - Form Grouping
+**Learning:** Groups of related inputs (like radio buttons) are often implemented as loose divs, which fails to programmatically associate the group label with the options for screen readers.
+**Action:** Always wrap radio button groups in a `<fieldset>` with a `<legend>`. Use CSS to remove the default border and padding if a cleaner look is desired, ensuring the `legend` is styled consistently with other labels.

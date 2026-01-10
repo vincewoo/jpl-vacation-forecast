@@ -124,8 +124,8 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
           </small>
         </div>
 
-        <div className="form-group">
-          <label>Work Schedule</label>
+        <fieldset className="form-group radio-fieldset">
+          <legend>Work Schedule</legend>
           <div className="radio-group">
             <label className="radio-label">
               <input
@@ -148,7 +148,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
               <span>9/80 (Nine 9-hour days + one 8-hour day over 2 weeks, alternating Friday off)</span>
             </label>
           </div>
-        </div>
+        </fieldset>
 
         <button type="submit" className="submit-button">
           Start Forecasting
