@@ -1,6 +1,6 @@
 import { WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
-import { getDatesInRange, parseDate } from './dateUtils';
+import { parseDate, formatDate } from './dateUtils';
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -144,21 +144,25 @@ export const calculateVacationHoursForRange = (
   holidays: Holiday[] = []
 ): number => {
   let totalHours = 0;
-  const dates = getDatesInRange(startDate, endDate);
+  const currentDate = new Date(startDate);
 
-  // Create a Set of holiday date strings for fast lookup
-  const holidayDates = new Set(
-    holidays.map(h => parseDate(h.date).toISOString().split('T')[0])
-  );
+  // Optimize: Create a Set of holiday date strings for fast lookup
+  // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
+  // We use direct string comparison for performance, avoiding redundant parsing.
+  const holidayDates = new Set(holidays.map(h => h.date));
 
-  for (const date of dates) {
+  // Loop without allocating array
+  while (currentDate <= endDate) {
+    // Use optimized formatDate
+    const dateStr = formatDate(currentDate);
+
     // Skip this date if it's a holiday
-    const dateStr = date.toISOString().split('T')[0];
-    if (holidayDates.has(dateStr)) {
-      continue;
+    if (!holidayDates.has(dateStr)) {
+      totalHours += getWorkHoursForDay(currentDate, workSchedule);
     }
 
-    totalHours += getWorkHoursForDay(date, workSchedule);
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
   return totalHours;

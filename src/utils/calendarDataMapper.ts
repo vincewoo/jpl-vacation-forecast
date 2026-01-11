@@ -42,11 +42,16 @@ export const mapWeeklyBalancesToDays = (
   // Store start/end as timestamps for fast comparison
   const processedVacations = plannedVacations.map(v => {
     const start = parseDate(v.startDate);
+
+    // Pre-calculate total hours for the vacation once
+    const totalHours = getVacationHours(v, workSchedule, holidays);
+
     return {
       original: v,
       start: start.getTime(),
       end: parseDate(v.endDate).getTime(),
-      startDateKey: formatDate(start) // Pre-calculate for isPersonalDayStart check
+      startDateKey: formatDate(start), // Pre-calculate for isPersonalDayStart check
+      totalHours
     };
   });
 
@@ -97,7 +102,7 @@ export const mapWeeklyBalancesToDays = (
       date,
       types,
       hours: getWorkHoursForDay(date, workSchedule),
-      vacationHours: vacation ? getVacationHours(vacation.original, workSchedule, holidays) : undefined,
+      vacationHours: vacation ? vacation.totalHours : undefined,
       balance,
       accrualRate,
       isInVacation: !!vacation,
