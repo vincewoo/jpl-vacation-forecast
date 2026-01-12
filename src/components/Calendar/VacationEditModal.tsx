@@ -123,12 +123,35 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
     onClose();
   };
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (isOpen && e.key === 'Escape') {
+        handleClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen]);
+
   if (!isOpen || !vacation) return null;
 
   return (
-    <div className="modal-overlay" onClick={handleClose}>
+    <div
+      className="modal-overlay"
+      onClick={handleClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="edit-vacation-title"
+    >
       <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-        <h2>Edit Vacation</h2>
+        <button
+          onClick={handleClose}
+          className="modal-close-button"
+          aria-label="Close modal"
+        >
+          ×
+        </button>
+        <h2 id="edit-vacation-title">Edit Vacation</h2>
 
         <form
           onSubmit={(e) => {
@@ -144,6 +167,7 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               required
+              autoFocus
             />
           </div>
 
