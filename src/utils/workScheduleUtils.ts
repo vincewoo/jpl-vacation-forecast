@@ -85,7 +85,9 @@ export const isRDOFriday = (date: Date, rdoPattern: string): boolean => {
 
   const isEvenWeek = weekNumber % 2 === 0;
 
-  return rdoPattern === 'even-fridays' ? isEvenWeek : !isEvenWeek;
+  // For "odd-fridays" pattern, RDOs are on even ISO weeks.
+  // For "even-fridays" pattern (deprecated), RDOs are on odd ISO weeks.
+  return rdoPattern === 'even-fridays' ? !isEvenWeek : isEvenWeek;
 };
 
 /**
