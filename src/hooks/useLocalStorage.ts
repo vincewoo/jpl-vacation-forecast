@@ -18,6 +18,11 @@ export function useLocalStorage<T>(
 ): [T, (value: T | ((val: T) => T)) => void] {
   // State to store our value
   const [storedValue, setStoredValue] = useState<T>(() => {
+    // Register validator immediately so even the first read is protected if going through service
+    if (validator) {
+      storageService.registerValidator(key, validator);
+    }
+
     try {
       const item = window.localStorage.getItem(key);
       if (item) {
