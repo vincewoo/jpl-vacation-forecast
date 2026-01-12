@@ -16,6 +16,14 @@ export class StorageService {
   private userId: string | null = null;
   private listeners: Map<string, Set<StorageListener<any>>> = new Map();
   private unsubscribers: Map<string, Unsubscribe> = new Map();
+  private validators: Map<string, (data: any) => boolean> = new Map();
+
+  /**
+   * Register a validator for a specific key to ensure data integrity
+   */
+  registerValidator(key: string, validator: (data: any) => boolean) {
+    this.validators.set(key, validator);
+  }
 
   /**
    * Get current storage mode
@@ -42,11 +50,18 @@ export class StorageService {
    * Read value from storage
    */
   async get<T>(key: string, defaultValue: T): Promise<T> {
+    const validator = this.validators.get(key);
+
     // Always try localStorage first
     try {
       const localItem = window.localStorage.getItem(key);
       if (localItem) {
-        return JSON.parse(localItem);
+        const parsed = JSON.parse(localItem);
+        if (validator && !validator(parsed)) {
+          logError(`Validation failed for ${key} from localStorage`, { value: parsed });
+          return defaultValue;
+        }
+        return parsed;
       }
     } catch (error) {
       logError(`Error reading ${key} from localStorage`, error);
@@ -60,7 +75,12 @@ export class StorageService {
           const docRef = doc(db, 'users', this.userId, 'data', key);
           const docSnap = await getDoc(docRef);
           if (docSnap.exists()) {
-            return docSnap.data().value as T;
+            const value = docSnap.data().value;
+            if (validator && !validator(value)) {
+              logError(`Validation failed for ${key} from Firebase`, { value });
+              return defaultValue;
+            }
+            return value as T;
           }
         }
       } catch (error) {
@@ -188,8 +208,17 @@ export class StorageService {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          window.localStorage.setItem(key, JSON.stringify(data.value));
-          this.notifyListeners(key, data.value);
+          const value = data.value;
+
+          // Validate
+          const validator = this.validators.get(key);
+          if (validator && !validator(value)) {
+            logError(`Validation failed for ${key} during initial sync`, { value });
+            continue;
+          }
+
+          window.localStorage.setItem(key, JSON.stringify(value));
+          this.notifyListeners(key, value);
         }
       } catch (error) {
         logError(`Error loading ${key} from Firebase`, error);
@@ -212,6 +241,13 @@ export class StorageService {
         if (snapshot.exists()) {
           const data = snapshot.data();
           const value = data.value;
+
+          // Validate if validator exists
+          const validator = this.validators.get(key);
+          if (validator && !validator(value)) {
+            logError(`Validation failed for incoming cloud sync data for ${key}`, { value });
+            return;
+          }
 
           // Update localStorage
           window.localStorage.setItem(key, JSON.stringify(value));
