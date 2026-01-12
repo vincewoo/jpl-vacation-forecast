@@ -9,3 +9,7 @@
 ## 2025-01-10 - Form Grouping
 **Learning:** Groups of related inputs (like radio buttons) are often implemented as loose divs, which fails to programmatically associate the group label with the options for screen readers.
 **Action:** Always wrap radio button groups in a `<fieldset>` with a `<legend>`. Use CSS to remove the default border and padding if a cleaner look is desired, ensuring the `legend` is styled consistently with other labels.
+
+## 2025-01-20 - Modal Accessibility
+**Learning:** Custom modals often trap users if they lack standard accessibility features like ARIA roles, label association, and keyboard dismiss support (Escape key). A visible close button is also critical for mouse users who might miss the "Cancel" action.
+**Action:** Ensure all modals have `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`. Always include a visible "X" close button and implement a `useEffect` to handle the `Escape` key for dismissal.

@@ -537,12 +537,39 @@
   max-height: 90vh;
   overflow-y: auto;
   box-shadow: var(--shadow-md);
+  position: relative;
+}
+
+.modal-close-button {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: 0.25rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  transition: all 0.2s;
+}
+
+.modal-close-button:hover {
+  background-color: var(--bg-hover);
+  color: var(--text-primary);
 }
 
 .modal-content h2 {
   margin-top: 0;
   margin-bottom: 1.5rem;
   color: var(--text-heading);
+  padding-right: 2rem;
 }
 
 .modal-content .form-group {
