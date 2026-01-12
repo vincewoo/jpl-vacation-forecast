@@ -7,7 +7,6 @@ import {
   DayType
 } from '../types';
 import {
-  getDatesInRange,
   parseDate,
   formatDate
 } from './dateUtils';
@@ -55,10 +54,14 @@ export const mapWeeklyBalancesToDays = (
     };
   });
 
-  // Get all dates in the range
-  const dates = getDatesInRange(startDate, endDate);
+  // Iterate through dates without creating intermediate array
+  // Optimization: Use a while loop instead of getDatesInRange to avoid allocating
+  // a large array of Date objects, reducing garbage collection pressure.
+  const currentDate = new Date(startDate);
 
-  for (const date of dates) {
+  while (currentDate <= endDate) {
+    // Create new Date instance for the map value
+    const date = new Date(currentDate);
     const dateKey = formatDate(date);
     const dateTime = date.getTime();
     const types: DayType[] = [];
@@ -112,6 +115,9 @@ export const mapWeeklyBalancesToDays = (
       isRDO: isRDODay,
       isPersonalDayStart: vacation?.original.personalDayUsed && vacation.startDateKey === dateKey,
     });
+
+    // Move to next day
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
   return dayMap;
