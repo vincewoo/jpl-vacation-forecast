@@ -443,22 +443,25 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       </div>
 
       <div className="calendar-header-controls">
-        <div className="view-toggle-buttons">
+        <div className="view-toggle-buttons" role="group" aria-label="Calendar View Duration">
           <button
             onClick={() => handleViewModeChange('2-month')}
             className={`view-toggle-button ${viewMode === '2-month' ? 'active' : ''}`}
+            aria-pressed={viewMode === '2-month'}
           >
             2-Month View
           </button>
           <button
             onClick={() => handleViewModeChange('6-month')}
             className={`view-toggle-button ${viewMode === '6-month' ? 'active' : ''}`}
+            aria-pressed={viewMode === '6-month'}
           >
             6-Month View
           </button>
           <button
             onClick={() => handleViewModeChange('12-month')}
             className={`view-toggle-button ${viewMode === '12-month' ? 'active' : ''}`}
+            aria-pressed={viewMode === '12-month'}
           >
             12-Month View
           </button>
@@ -467,6 +470,8 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           onClick={jumpToToday}
           className="jump-to-today-button"
           disabled={isViewingCurrentMonth}
+          title={isViewingCurrentMonth ? "Already viewing current month" : "Jump to current month"}
+          aria-label={isViewingCurrentMonth ? "Already viewing current month" : "Jump to current month"}
         >
           Jump to Today
         </button>
