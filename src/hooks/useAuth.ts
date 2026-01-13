@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { getFirebaseAuth, isFirebaseConfigured } from '../config/firebase';
 import { storageService } from '../services/storageService';
+import { logError } from '../utils/logger';
 
 export interface UseAuthResult {
   user: User | null;
@@ -66,7 +67,7 @@ export function useAuth(): UseAuthResult {
           try {
             await storageService.syncToCloud(STORAGE_KEYS);
           } catch (syncErr) {
-            console.error('Error syncing to cloud');
+            logError('Error syncing to cloud', syncErr);
           }
         } finally {
           // Mark sync as complete regardless of success/failure
@@ -111,7 +112,7 @@ export function useAuth(): UseAuthResult {
 
       setUser(result.user);
     } catch (err: any) {
-      console.error('Sign in error');
+      logError('Sign in error', err);
       setError(err.message || 'Failed to sign in');
       storageService.setMode('localStorage');
     } finally {
@@ -143,7 +144,7 @@ export function useAuth(): UseAuthResult {
 
       setUser(null);
     } catch (err: any) {
-      console.error('Sign out error');
+      logError('Sign out error', err);
       setError(err.message || 'Failed to sign out');
     } finally {
       setLoading(false);
