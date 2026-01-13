@@ -8,7 +8,6 @@ import {
 import {
   getWeeksInRange,
   getWeekEnd,
-  isDateInRange,
   parseDate,
   formatDate
 } from './dateUtils';
@@ -199,7 +198,7 @@ export const calculateWeeklyBalances = (
       accrued,
       used,
       endingBalance,
-      plannedVacations: weekVacations,
+      plannedVacations: weekVacations.map(v => v.original),
       holidays: weekHolidays,
       rdoDays: rdoDays.map(formatDate),
     });
