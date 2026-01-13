@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import PrivacyNotice from '../PrivacyNotice/PrivacyNotice';
+import { logError } from '../../utils/logger';
 import './WelcomeScreen.css';
 
 interface WelcomeScreenProps {
@@ -18,7 +19,7 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewUser }) => {
       // After sign-in, the auth state change will trigger cloud sync
       // and the App component will handle the transition
     } catch (err) {
-      console.error('Sign-in error');
+      logError('Sign-in error', err);
       setSigningIn(false);
     }
   };
