@@ -36,11 +36,30 @@ export const calculateWeeklyBalances = (
   const profileStartDate = parseDate(userProfile.startDate);
   const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
+  // Pre-calculate holiday set for fast lookup in calculateVacationHoursForRange
+  const holidayDatesSet = new Set(holidays.map(h => h.date));
+
+  // Optimization: Pre-process holidays with timestamps to avoid repeated parsing in loop
+  const processedHolidays = holidays.map(h => ({
+    original: h,
+    timestamp: parseDate(h.date).getTime()
+  }));
+
+  // Optimization: Pre-process vacations with timestamps to avoid repeated parsing in loop
+  const processedVacations = plannedVacations.map(v => ({
+    original: v,
+    start: parseDate(v.startDate),
+    end: parseDate(v.endDate),
+    startTimestamp: parseDate(v.startDate).getTime(),
+    endTimestamp: parseDate(v.endDate).getTime(),
+    startYear: parseDate(v.startDate).getFullYear()
+  }));
+
   // Identify years where the personal day was used
   const yearsWithPersonalDay = new Set(
-    plannedVacations
-      .filter(v => v.personalDayUsed)
-      .map(v => parseDate(v.startDate).getFullYear())
+    processedVacations
+      .filter(v => v.original.personalDayUsed)
+      .map(v => v.startYear)
   );
 
   // Add the start year if user indicated they used personal day before balance date
@@ -51,6 +70,8 @@ export const calculateWeeklyBalances = (
 
   for (const weekStart of weeks) {
     const weekEnd = getWeekEnd(weekStart);
+    const weekStartTs = weekStart.getTime();
+    const weekEndTs = weekEnd.getTime();
 
     // Calculate accrual for this week, but only if the week starts on or after the balanceAsOfDate
     // The balanceAsOfDate represents the starting balance at the beginning of that date
@@ -87,21 +108,16 @@ export const calculateWeeklyBalances = (
       }
     }
 
-    // Find vacations in this week
-    const weekVacations = plannedVacations.filter(vacation => {
-      const vacStart = parseDate(vacation.startDate);
-      const vacEnd = parseDate(vacation.endDate);
-      return (
-        isDateInRange(vacStart, weekStart, weekEnd) ||
-        isDateInRange(vacEnd, weekStart, weekEnd) ||
-        (vacStart < weekStart && vacEnd > weekEnd)
-      );
+    // Find vacations in this week using numeric comparisons
+    // Overlap logic: (StartA <= EndB) and (EndA >= StartB)
+    const weekVacations = processedVacations.filter(vacation => {
+      return (vacation.startTimestamp <= weekEndTs) && (vacation.endTimestamp >= weekStartTs);
     });
 
-    // Find holidays in this week
-    const weekHolidays = holidays.filter(holiday =>
-      isDateInRange(parseDate(holiday.date), weekStart, weekEnd)
-    );
+    // Find holidays in this week using numeric comparisons
+    const weekHolidays = processedHolidays.filter(holiday =>
+      holiday.timestamp >= weekStartTs && holiday.timestamp <= weekEndTs
+    ).map(h => h.original);
 
     // Calculate RDO days for 9/80 schedules
     const rdoDays = userProfile.workSchedule.type === '9/80' &&
@@ -111,8 +127,8 @@ export const calculateWeeklyBalances = (
 
     // Calculate total hours used this week (dynamically calculated from vacation dates)
     const used = weekVacations.reduce((sum, v) => {
-      const vacStart = parseDate(v.startDate);
-      const vacEnd = parseDate(v.endDate);
+      const vacStart = v.start;
+      const vacEnd = v.end;
 
       // Calculate intersection of vacation and current week
       const effectiveStart = vacStart > weekStart ? vacStart : weekStart;
@@ -122,7 +138,8 @@ export const calculateWeeklyBalances = (
         effectiveStart,
         effectiveEnd,
         userProfile.workSchedule,
-        holidays
+        holidays,
+        holidayDatesSet
       );
 
       // If Personal Day is used for this vacation, subtract 8 hours from the cost
@@ -134,7 +151,7 @@ export const calculateWeeklyBalances = (
       // If the vacation starts in this week, we apply the deduction.
       // Or simpler: Check if the vacation START date is within the current week range.
       let deduction = 0;
-      if (v.personalDayUsed) {
+      if (v.original.personalDayUsed) {
         // Check if the vacation start date falls within this week
         // Note: vacStart is the vacation start date.
         // If vacStart is in [weekStart, weekEnd], apply deduction here.
