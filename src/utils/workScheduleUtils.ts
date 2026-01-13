@@ -143,15 +143,17 @@ export const calculateVacationHoursForRange = (
   startDate: Date,
   endDate: Date,
   workSchedule: WorkSchedule,
-  holidays: Holiday[] = []
+  holidays: Holiday[] = [],
+  // Optimization: Allow passing a pre-calculated Set of holiday dates to avoid re-creation in loops
+  precalculatedHolidayDates?: Set<string>
 ): number => {
   let totalHours = 0;
   const currentDate = new Date(startDate);
 
-  // Optimize: Create a Set of holiday date strings for fast lookup
+  // Optimize: Use pre-calculated set if available, otherwise create one
   // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
   // We use direct string comparison for performance, avoiding redundant parsing.
-  const holidayDates = new Set(holidays.map(h => h.date));
+  const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
 
   // Loop without allocating array
   while (currentDate <= endDate) {
