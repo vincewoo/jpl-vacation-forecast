@@ -107,6 +107,7 @@ const VacationListByYear: React.FC<VacationListByYearProps> = ({
                         onClick={() => onEdit(vacation)}
                         className="action-button edit-button"
                         title="Edit vacation"
+                        aria-label={`Edit vacation starting ${formatDateDisplay(vacation.startDate)}`}
                       >
                         Edit
                       </button>
@@ -114,6 +115,7 @@ const VacationListByYear: React.FC<VacationListByYearProps> = ({
                         onClick={() => onDelete(vacation.id)}
                         className="action-button delete-button"
                         title="Delete vacation"
+                        aria-label={`Delete vacation starting ${formatDateDisplay(vacation.startDate)}`}
                       >
                         Delete
                       </button>
