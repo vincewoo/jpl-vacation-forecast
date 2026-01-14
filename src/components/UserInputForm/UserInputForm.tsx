@@ -78,6 +78,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             value={currentBalance}
             onChange={(e) => setCurrentBalance(e.target.value)}
             min="0"
+            max="1000"
             step="0.01"
             required
             aria-describedby="currentBalance-help"
