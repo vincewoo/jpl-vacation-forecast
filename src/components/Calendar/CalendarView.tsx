@@ -435,7 +435,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         {error && (
           <div className="error-banner" role="alert">
             {error}
-            <button onClick={() => setError('')} className="close-error">
+            <button onClick={() => setError('')} className="close-error" aria-label="Close error message">
               ×
             </button>
           </div>
