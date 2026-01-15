@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, ScheduleType } from '../../types';
 import { parseDate } from '../../utils/dateUtils';
+import { MAX_VACATION_BALANCE } from '../../utils/balanceCalculator';
 import './UserInputForm.css';
 
 interface UserInputFormProps {
@@ -78,6 +79,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             value={currentBalance}
             onChange={(e) => setCurrentBalance(e.target.value)}
             min="0"
+            max={MAX_VACATION_BALANCE}
             step="0.01"
             required
             aria-describedby="currentBalance-help"
