@@ -231,43 +231,47 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Cache for month boundaries to avoid repeated Date calculations in render loops
+  const boundsCache = useMemo(() => new Map<number, { monthStart: number; monthEnd: number; lastSaturdayOfWeek: number }>(), []);
+
+  const getMonthBounds = useCallback((activeStartDate: Date) => {
+    const time = activeStartDate.getTime();
+    if (boundsCache.has(time)) {
+      return boundsCache.get(time)!;
+    }
+
+    const displayMonth = activeStartDate.getMonth();
+    const displayYear = activeStartDate.getFullYear();
+
+    const monthStart = new Date(displayYear, displayMonth, 1).getTime();
+    const lastDayOfMonth = new Date(displayYear, displayMonth + 1, 0);
+    const monthEnd = lastDayOfMonth.getTime();
+
+    const lastDay = lastDayOfMonth.getDay();
+    const daysUntilSaturday = lastDay === 6 ? 0 : (6 - lastDay + 7) % 7;
+    const lastSaturdayOfWeek = new Date(displayYear, displayMonth, lastDayOfMonth.getDate() + daysUntilSaturday).getTime();
+
+    const bounds = { monthStart, monthEnd, lastSaturdayOfWeek };
+    boundsCache.set(time, bounds);
+    return bounds;
+  }, [boundsCache]);
+
   // Helper function to check if a date should be hidden (beyond the last week of the month)
   const shouldHideTile = useCallback(({ date, view, activeStartDate }: { date: Date; view: string; activeStartDate: Date }) => {
     if (view !== 'month') return false;
 
-    // Get the month being displayed
-    const displayMonth = activeStartDate.getMonth();
-    const displayYear = activeStartDate.getFullYear();
+    const bounds = getMonthBounds(activeStartDate);
+    const dateTime = date.getTime();
 
-    // Get the last day of the display month
-    const lastDayOfMonth = new Date(displayYear, displayMonth + 1, 0);
-
-    // Hide dates before the first of the month
-    if (date < new Date(displayYear, displayMonth, 1)) {
-      return true;
-    }
-
-    // Find the Saturday that ends the week containing the last day of the month
-    const lastDay = lastDayOfMonth.getDay();
-    const daysUntilSaturday = lastDay === 6 ? 0 : (6 - lastDay + 7) % 7;
-    const lastSaturdayOfWeek = new Date(displayYear, displayMonth, lastDayOfMonth.getDate() + daysUntilSaturday);
-
-    // Hide dates after that Saturday
-    if (date > lastSaturdayOfWeek) {
-      return true;
-    }
-
-    return false;
-  }, []);
+    // Hide dates before the first of the month or after the last Saturday
+    return dateTime < bounds.monthStart || dateTime > bounds.lastSaturdayOfWeek;
+  }, [getMonthBounds]);
 
   // Helper function to check if a date is from the next month
   const isNextMonthDay = useCallback(({ date, activeStartDate }: { date: Date; activeStartDate: Date }) => {
-    const displayMonth = activeStartDate.getMonth();
-    const displayYear = activeStartDate.getFullYear();
-    const lastDayOfMonth = new Date(displayYear, displayMonth + 1, 0);
-
-    return date > lastDayOfMonth;
-  }, []);
+    const bounds = getMonthBounds(activeStartDate);
+    return date.getTime() > bounds.monthEnd;
+  }, [getMonthBounds]);
 
   // Generate tile class names
   const getTileClassName = useCallback(
