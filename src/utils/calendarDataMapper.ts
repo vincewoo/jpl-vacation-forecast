@@ -10,7 +10,14 @@ import {
   parseDate,
   formatDate
 } from './dateUtils';
-import { isWeekend, isRDO, getWorkHoursForDay, getVacationHours } from './workScheduleUtils';
+import { isWeekend, isRDO, getWorkHoursForDay } from './workScheduleUtils';
+
+// Helper interface for processed vacation data
+interface ProcessedVacation {
+  original: PlannedVacation;
+  totalHours: number;
+  startDateKey: string;
+}
 
 /**
  * Maps weekly balances, vacations, and holidays to calendar day information
@@ -28,7 +35,11 @@ export const mapWeeklyBalancesToDays = (
 
   // Optimize lookups
   const holidayMap = new Map<string, Holiday>();
-  holidays.forEach(h => holidayMap.set(h.date, h));
+  const holidayDateSet = new Set<string>();
+  holidays.forEach(h => {
+    holidayMap.set(h.date, h);
+    holidayDateSet.add(h.date);
+  });
 
   const weeklyBalanceMap = new Map<string, WeeklyBalance>();
   weeklyBalances.forEach(wb => {
@@ -38,21 +49,51 @@ export const mapWeeklyBalancesToDays = (
   });
 
   // Optimize vacation ranges
-  // Store start/end as timestamps for fast comparison
-  const processedVacations = plannedVacations.map(v => {
+  // Map<timestamp, ProcessedVacation> for O(1) lookup
+  const vacationDayMap = new Map<number, ProcessedVacation>();
+
+  // To preserve "first match wins" behavior of original find(),
+  // we iterate in reverse so that earlier vacations in the array overwrite later ones in the map.
+  // Original logic: processedVacations.find(...) returns the first element.
+  // New logic: map.get() returns value. If multiple vacations cover the same day,
+  // the one that appears first in plannedVacations should remain in the map.
+  // So we populate from last to first.
+  for (let i = plannedVacations.length - 1; i >= 0; i--) {
+    const v = plannedVacations[i];
+    if (!v) continue;
+
     const start = parseDate(v.startDate);
+    const end = parseDate(v.endDate);
 
-    // Pre-calculate total hours for the vacation once
-    const totalHours = getVacationHours(v, workSchedule, holidays);
+    // Optimization: Calculate total hours while iterating to populate the map.
+    // This avoids a second iteration over the days that getVacationHours would perform.
+    let totalHours = 0;
 
-    return {
+    const processed: ProcessedVacation = {
       original: v,
-      start: start.getTime(),
-      end: parseDate(v.endDate).getTime(),
-      startDateKey: formatDate(start), // Pre-calculate for isPersonalDayStart check
-      totalHours
+      totalHours: 0, // Will be updated after calculation
+      startDateKey: formatDate(start)
     };
-  });
+
+    const current = new Date(start);
+    // Loop through each day of the vacation and add to map
+    while (current <= end) {
+      const dateTime = current.getTime();
+      const dateStr = formatDate(current);
+
+      vacationDayMap.set(dateTime, processed);
+
+      // Calculate hours for this day (logic inlined from calculateVacationHoursForRange)
+      if (!holidayDateSet.has(dateStr)) {
+        totalHours += getWorkHoursForDay(current, workSchedule);
+      }
+
+      current.setDate(current.getDate() + 1);
+    }
+
+    // Update the total hours for the vacation object
+    processed.totalHours = totalHours;
+  }
 
   // Iterate through dates without creating intermediate array
   // Optimization: Use a while loop instead of getDatesInRange to avoid allocating
@@ -83,10 +124,8 @@ export const mapWeeklyBalancesToDays = (
       types.push(DayType.HOLIDAY);
     }
 
-    // Check if in vacation
-    const vacation = processedVacations.find(v => {
-      return dateTime >= v.start && dateTime <= v.end;
-    });
+    // Check if in vacation (O(1) lookup)
+    const vacation = vacationDayMap.get(dateTime);
 
     if (vacation) {
       types.push(DayType.PLANNED_VACATION);
