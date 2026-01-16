@@ -1,5 +1,9 @@
 import { UserProfile, PlannedVacation, Holiday, ScheduleType } from '../types';
 
+// Sanity limits to prevent excessive data size or processing
+export const MAX_DESCRIPTION_LENGTH_SANITY = 2000;
+export const MAX_BALANCE_SANITY = 10000;
+
 /**
  * Type guard for UserProfile
  */
@@ -9,6 +13,9 @@ export const isValidUserProfile = (data: any): data is UserProfile => {
   // Check required fields
   if (typeof data.startDate !== 'string') return false;
   if (typeof data.currentBalance !== 'number') return false;
+  // Sanity check for balance
+  if (data.currentBalance < -1000 || data.currentBalance > MAX_BALANCE_SANITY) return false;
+
   if (typeof data.balanceAsOfDate !== 'string') return false;
 
   // Check workSchedule
@@ -33,7 +40,11 @@ export const isValidPlannedVacation = (data: any): data is PlannedVacation => {
   if (typeof data.endDate !== 'string') return false;
 
   // Optional fields
-  if (data.description !== undefined && typeof data.description !== 'string') return false;
+  if (data.description !== undefined) {
+    if (typeof data.description !== 'string') return false;
+    // Sanity check for description length
+    if (data.description.length > MAX_DESCRIPTION_LENGTH_SANITY) return false;
+  }
   if (data.personalDayUsed !== undefined && typeof data.personalDayUsed !== 'boolean') return false;
 
   return true;
