@@ -189,9 +189,10 @@ export const isRDO = (date: Date, workSchedule: WorkSchedule): boolean => {
 export const getVacationHours = (
   vacation: { startDate: string; endDate: string },
   workSchedule: WorkSchedule,
-  holidays: Holiday[] = []
+  holidays: Holiday[] = [],
+  precalculatedHolidayDates?: Set<string>
 ): number => {
   const startDate = parseDate(vacation.startDate);
   const endDate = parseDate(vacation.endDate);
-  return calculateVacationHoursForRange(startDate, endDate, workSchedule, holidays);
+  return calculateVacationHoursForRange(startDate, endDate, workSchedule, holidays, precalculatedHolidayDates);
 };
