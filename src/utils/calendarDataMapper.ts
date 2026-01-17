@@ -28,7 +28,13 @@ export const mapWeeklyBalancesToDays = (
 
   // Optimize lookups
   const holidayMap = new Map<string, Holiday>();
-  holidays.forEach(h => holidayMap.set(h.date, h));
+  // Optimization: Create a Set for fast boolean lookups in getVacationHours
+  const holidayDateSet = new Set<string>();
+
+  holidays.forEach(h => {
+    holidayMap.set(h.date, h);
+    holidayDateSet.add(h.date);
+  });
 
   const weeklyBalanceMap = new Map<string, WeeklyBalance>();
   weeklyBalances.forEach(wb => {
@@ -43,7 +49,7 @@ export const mapWeeklyBalancesToDays = (
     const start = parseDate(v.startDate);
 
     // Pre-calculate total hours for the vacation once
-    const totalHours = getVacationHours(v, workSchedule, holidays);
+    const totalHours = getVacationHours(v, workSchedule, holidays, holidayDateSet);
 
     return {
       original: v,

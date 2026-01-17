@@ -70,6 +70,11 @@ const VacationListByYear: React.FC<VacationListByYearProps> = ({
     return days === 1 ? '1 day' : `${days} days`;
   };
 
+  // Optimization: Memoize holiday set to avoid recreation in render loop
+  const holidayDateSet = useMemo(() => {
+    return new Set(holidays.map(h => h.date));
+  }, [holidays]);
+
   if (vacations.length === 0) {
     return null;
   }
@@ -101,7 +106,7 @@ const VacationListByYear: React.FC<VacationListByYearProps> = ({
                       {vacation.description || <span className="no-description">—</span>}
                     </td>
                     <td className="vacation-duration">{getDuration(vacation)}</td>
-                    <td className="vacation-hours">{getVacationHours(vacation, workSchedule, holidays).toFixed(1)}h</td>
+                    <td className="vacation-hours">{getVacationHours(vacation, workSchedule, holidays, holidayDateSet).toFixed(1)}h</td>
                     <td className="vacation-actions">
                       <button
                         onClick={() => onEdit(vacation)}

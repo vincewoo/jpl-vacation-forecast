@@ -274,13 +274,16 @@ export const calculateProjectedBalance = (
   const accrued = calculateAccrualForRange(profileStartDate, today, targetDate);
 
   // Calculate vacation usage from today to target date (dynamically calculated)
+  // Optimization: Create holiday set once for all vacation calculations
+  const holidayDateSet = new Set(holidays.map(h => h.date));
+
   const used = plannedVacations
     .filter(vacation => {
       const vacEnd = parseDate(vacation.endDate);
       return vacEnd <= targetDate;
     })
     .reduce((sum, v) => {
-      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
+      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays, holidayDateSet);
       // Apply Personal Day deduction
       const deduction = v.personalDayUsed ? 8 : 0;
       return sum + Math.max(0, vacationHours - deduction);
