@@ -130,14 +130,15 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
         </button>
       </div>
 
-      <div className="year-selector">
-        <label>Show recommendations for:</label>
+      <div className="year-selector" role="group" aria-labelledby="year-selector-label">
+        <label id="year-selector-label">Show recommendations for:</label>
         <div className="year-buttons">
           {availableYears.map(year => (
             <button
               key={year}
               className={selectedYear === year ? 'active' : ''}
               onClick={() => setSelectedYear(year)}
+              aria-pressed={selectedYear === year}
             >
               {year}
             </button>
@@ -145,30 +146,34 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
         </div>
       </div>
 
-      <div className="trip-length-filter">
-        <label>Trip length:</label>
+      <div className="trip-length-filter" role="group" aria-labelledby="trip-length-label">
+        <label id="trip-length-label">Trip length:</label>
         <div className="filter-buttons">
           <button
             className={tripLengthFilter === 'all' ? 'active' : ''}
             onClick={() => setTripLengthFilter('all')}
+            aria-pressed={tripLengthFilter === 'all'}
           >
             All
           </button>
           <button
             className={tripLengthFilter === 'short' ? 'active' : ''}
             onClick={() => setTripLengthFilter('short')}
+            aria-pressed={tripLengthFilter === 'short'}
           >
             Short (≤1 wk)
           </button>
           <button
             className={tripLengthFilter === 'medium' ? 'active' : ''}
             onClick={() => setTripLengthFilter('medium')}
+            aria-pressed={tripLengthFilter === 'medium'}
           >
             Medium (1-2 wks)
           </button>
           <button
             className={tripLengthFilter === 'long' ? 'active' : ''}
             onClick={() => setTripLengthFilter('long')}
+            aria-pressed={tripLengthFilter === 'long'}
           >
             Long (2+ wks)
           </button>
@@ -196,6 +201,21 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
 
           {recommendations.map((rec, index) => {
             const scoreInfo = getScoreLabel(rec.score);
+
+            // Calculate percentages for score bars
+            const efficiencyPercent = Math.min(
+              rec.vacationHours === 0
+                ? ((rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0) * 100
+                : (Math.min(rec.efficiency, 5.0) / 5.0) * 100,
+              100
+            );
+
+            const bracketingPercent = rec.isBracketed ? 100 : 0;
+
+            const lengthPercent = Math.min(
+              (Math.log(rec.totalDays) / Math.log(14)) * 100,
+              100
+            );
 
             return (
               <div key={rec.id} className="recommendation-card">
@@ -235,9 +255,12 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                       <div className="score-bar-container">
                         <div
                           className="score-bar efficiency-bar"
-                          style={{ width: `${Math.min(rec.vacationHours === 0
-                            ? (rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0 * 100
-                            : Math.min(rec.efficiency, 5.0) / 5.0 * 100, 100)}%` }}
+                          role="progressbar"
+                          aria-valuenow={Math.round(efficiencyPercent)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Efficiency score contribution"
+                          style={{ width: `${efficiencyPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Efficiency (50%)</span>
@@ -246,7 +269,12 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                       <div className="score-bar-container">
                         <div
                           className="score-bar bracketing-bar"
-                          style={{ width: rec.isBracketed ? '100%' : '0%' }}
+                          role="progressbar"
+                          aria-valuenow={Math.round(bracketingPercent)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Bracketing score contribution"
+                          style={{ width: `${bracketingPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Bracketing (25%)</span>
@@ -255,7 +283,12 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                       <div className="score-bar-container">
                         <div
                           className="score-bar length-bar"
-                          style={{ width: `${Math.min((Math.log(rec.totalDays) / Math.log(14)) * 100, 100)}%` }}
+                          role="progressbar"
+                          aria-valuenow={Math.round(lengthPercent)}
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-label="Trip length score contribution"
+                          style={{ width: `${lengthPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Length (25%)</span>
