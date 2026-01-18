@@ -422,10 +422,14 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     <div className="calendar-view">
       <div className="banner-container">
         {selectionMode === 'selecting' && (
-          <div className="selection-banner">
+          <div className="selection-banner" role="status" aria-live="polite">
             <span>
               Selecting vacation: Click the end date or{' '}
-              <button onClick={cancelSelection} className="cancel-link">
+              <button
+                onClick={cancelSelection}
+                className="cancel-link"
+                aria-label="Cancel vacation selection"
+              >
                 Cancel
               </button>
             </span>
@@ -435,7 +439,12 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         {error && (
           <div className="error-banner" role="alert">
             {error}
-            <button onClick={() => setError('')} className="close-error">
+            <button
+              onClick={() => setError('')}
+              className="close-error"
+              title="Close"
+              aria-label="Close error message"
+            >
               ×
             </button>
           </div>
