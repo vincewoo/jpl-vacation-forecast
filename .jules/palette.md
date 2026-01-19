@@ -13,3 +13,7 @@
 ## 2025-01-20 - Modal Accessibility
 **Learning:** Custom modals often trap users if they lack standard accessibility features like ARIA roles, label association, and keyboard dismiss support (Escape key). A visible close button is also critical for mouse users who might miss the "Cancel" action.
 **Action:** Ensure all modals have `role="dialog"`, `aria-modal="true"`, and `aria-labelledby`. Always include a visible "X" close button and implement a `useEffect` to handle the `Escape` key for dismissal.
+
+## 2025-01-26 - Visual Score Bars
+**Learning:** Custom visual indicators (like efficiency score bars) implemented as colored `div`s are completely invisible to screen readers, leaving them without critical data context.
+**Action:** Always add `role="progressbar"` to visual score indicators, along with `aria-valuenow`, `aria-valuemin`, `aria-valuemax`, and a descriptive `aria-label` to convey the value and purpose.
