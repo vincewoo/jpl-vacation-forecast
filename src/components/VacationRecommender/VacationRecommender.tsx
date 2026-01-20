@@ -93,6 +93,17 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
     return { text: 'Fair', className: 'fair' };
   };
 
+  const calculateEfficiencyPercent = (rec: VacationRecommendation): number => {
+    if (rec.vacationHours === 0) {
+      return Math.min((rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0 * 100, 100);
+    }
+    return Math.min(Math.min(rec.efficiency, 5.0) / 5.0 * 100, 100);
+  };
+
+  const calculateLengthPercent = (rec: VacationRecommendation): number => {
+    return Math.min((Math.log(rec.totalDays) / Math.log(14)) * 100, 100);
+  };
+
   if (!isExpanded) {
     return (
       <div className="vacation-recommender-collapsed">
@@ -232,33 +243,52 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                   </div>
                   <div className="score-components">
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={Math.round(calculateEfficiencyPercent(rec))}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Efficiency Score"
+                      >
                         <div
                           className="score-bar efficiency-bar"
-                          style={{ width: `${Math.min(rec.vacationHours === 0
-                            ? (rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0 * 100
-                            : Math.min(rec.efficiency, 5.0) / 5.0 * 100, 100)}%` }}
+                          style={{ width: `${calculateEfficiencyPercent(rec)}%` }}
                         />
                       </div>
-                      <span className="score-label">Efficiency (50%)</span>
+                      <span className="score-label" aria-hidden="true">Efficiency (50%)</span>
                     </div>
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={rec.isBracketed ? 100 : 0}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Bracketing Score"
+                      >
                         <div
                           className="score-bar bracketing-bar"
                           style={{ width: rec.isBracketed ? '100%' : '0%' }}
                         />
                       </div>
-                      <span className="score-label">Bracketing (25%)</span>
+                      <span className="score-label" aria-hidden="true">Bracketing (25%)</span>
                     </div>
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={Math.round(calculateLengthPercent(rec))}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Length Score"
+                      >
                         <div
                           className="score-bar length-bar"
-                          style={{ width: `${Math.min((Math.log(rec.totalDays) / Math.log(14)) * 100, 100)}%` }}
+                          style={{ width: `${calculateLengthPercent(rec)}%` }}
                         />
                       </div>
-                      <span className="score-label">Length (25%)</span>
+                      <span className="score-label" aria-hidden="true">Length (25%)</span>
                     </div>
                   </div>
                 </div>
