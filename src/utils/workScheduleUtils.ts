@@ -125,11 +125,23 @@ export const getRDODatesInRange = (
   const rdoDates: Date[] = [];
   const currentDate = new Date(startDate);
 
+  // Optimization: Jump to the first Friday instead of checking every day
+  // 0=Sun, 1=Mon, ..., 5=Fri, 6=Sat
+  const day = currentDate.getDay();
+  // Calculate days to add to get to Friday (5)
+  // If day=0 (Sun), add 5
+  // If day=1 (Mon), add 4
+  // If day=5 (Fri), add 0
+  // If day=6 (Sat), add 6 (next week Fri)
+  const daysToFriday = (5 - day + 7) % 7;
+  currentDate.setDate(currentDate.getDate() + daysToFriday);
+
+  // Loop jumping by 7 days (checking only Fridays)
   while (currentDate <= endDate) {
-    if (currentDate.getDay() === 5 && isRDOFriday(currentDate, rdoPattern)) {
+    if (isRDOFriday(currentDate, rdoPattern)) {
       rdoDates.push(new Date(currentDate));
     }
-    currentDate.setDate(currentDate.getDate() + 1);
+    currentDate.setDate(currentDate.getDate() + 7);
   }
 
   return rdoDates;
