@@ -145,7 +145,9 @@ export const calculateVacationHoursForRange = (
   workSchedule: WorkSchedule,
   holidays: Holiday[] = [],
   // Optimization: Allow passing a pre-calculated Set of holiday dates to avoid re-creation in loops
-  precalculatedHolidayDates?: Set<string>
+  precalculatedHolidayDates?: Set<string>,
+  // Optimization: Allow passing a pre-calculated Set of holiday date integers (YYYYMMDD) to avoid string allocation
+  precalculatedHolidayIntegers?: Set<number>
 ): number => {
   let totalHours = 0;
   const currentDate = new Date(startDate);
@@ -153,15 +155,28 @@ export const calculateVacationHoursForRange = (
   // Optimize: Use pre-calculated set if available, otherwise create one
   // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
   // We use direct string comparison for performance, avoiding redundant parsing.
-  const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
+  const holidayIntegers = precalculatedHolidayIntegers;
+  // Only create date string set if integers aren't provided
+  const holidayDates = !holidayIntegers ? (precalculatedHolidayDates || new Set(holidays.map(h => h.date))) : null;
 
   // Loop without allocating array
   while (currentDate <= endDate) {
-    // Use optimized formatDate
-    const dateStr = formatDate(currentDate);
+    let isHoliday = false;
+
+    if (holidayIntegers) {
+      // Fast path: Check integer date representation (YYYYMMDD) directly.
+      // This avoids string allocation and is safer than timestamp comparison
+      // because it ignores time components and timezone shifts.
+      const dateInt = currentDate.getFullYear() * 10000 + (currentDate.getMonth() + 1) * 100 + currentDate.getDate();
+      isHoliday = holidayIntegers.has(dateInt);
+    } else {
+      // Legacy path: Create date string and check
+      const dateStr = formatDate(currentDate);
+      isHoliday = holidayDates!.has(dateStr);
+    }
 
     // Skip this date if it's a holiday
-    if (!holidayDates.has(dateStr)) {
+    if (!isHoliday) {
       totalHours += getWorkHoursForDay(currentDate, workSchedule);
     }
 
