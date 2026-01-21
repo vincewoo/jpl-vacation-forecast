@@ -44,6 +44,12 @@ export const calculateWeeklyBalances = (
     timestamp: parseDate(h.date).getTime()
   }));
 
+  // Optimization: Pre-calculate holiday date integers (YYYYMMDD) set for even faster lookup (avoids string allocation)
+  const holidayIntegersSet = new Set(processedHolidays.map(h => {
+    const d = new Date(h.timestamp);
+    return d.getFullYear() * 10000 + (d.getMonth() + 1) * 100 + d.getDate();
+  }));
+
   // Optimization: Pre-process vacations with timestamps to avoid repeated parsing in loop
   const processedVacations = plannedVacations.map(v => ({
     original: v,
@@ -138,7 +144,8 @@ export const calculateWeeklyBalances = (
         effectiveEnd,
         userProfile.workSchedule,
         holidays,
-        holidayDatesSet
+        holidayDatesSet,
+        holidayIntegersSet
       );
 
       // If Personal Day is used for this vacation, subtract 8 hours from the cost
