@@ -37,22 +37,28 @@ export const mapWeeklyBalancesToDays = (
     weeklyBalanceMap.set(key, wb);
   });
 
-  // Optimize vacation ranges
-  // Store start/end as timestamps for fast comparison
-  const processedVacations = plannedVacations.map(v => {
-    const start = parseDate(v.startDate);
+  // Optimize vacation lookups using Sweep Line algorithm
+  // Pre-process and sort by start date
+  const sortedVacations = plannedVacations
+    .map((v, index) => {
+      const start = parseDate(v.startDate);
+      // Pre-calculate total hours for the vacation once
+      const totalHours = getVacationHours(v, workSchedule, holidays);
 
-    // Pre-calculate total hours for the vacation once
-    const totalHours = getVacationHours(v, workSchedule, holidays);
+      return {
+        original: v,
+        originalIndex: index,
+        start: start.getTime(),
+        end: parseDate(v.endDate).getTime(),
+        startDateKey: formatDate(start), // Pre-calculate for isPersonalDayStart check
+        totalHours
+      };
+    })
+    .sort((a, b) => a.start - b.start);
 
-    return {
-      original: v,
-      start: start.getTime(),
-      end: parseDate(v.endDate).getTime(),
-      startDateKey: formatDate(start), // Pre-calculate for isPersonalDayStart check
-      totalHours
-    };
-  });
+  // Active vacations for the current day (usually 0 or 1)
+  const activeVacations: typeof sortedVacations = [];
+  let nextVacationIdx = 0;
 
   // Iterate through dates without creating intermediate array
   // Optimization: Use a while loop instead of getDatesInRange to avoid allocating
@@ -83,10 +89,34 @@ export const mapWeeklyBalancesToDays = (
       types.push(DayType.HOLIDAY);
     }
 
-    // Check if in vacation
-    const vacation = processedVacations.find(v => {
-      return dateTime >= v.start && dateTime <= v.end;
-    });
+    // Check if in vacation (Sweep Line)
+    // 1. Add new started vacations to active set
+    while (nextVacationIdx < sortedVacations.length && sortedVacations[nextVacationIdx].start <= dateTime) {
+      activeVacations.push(sortedVacations[nextVacationIdx]);
+      nextVacationIdx++;
+    }
+
+    // 2. Remove ended vacations from active set
+    // Iterate backwards to safely splice
+    for (let i = activeVacations.length - 1; i >= 0; i--) {
+      if (activeVacations[i].end < dateTime) {
+        activeVacations.splice(i, 1);
+      }
+    }
+
+    // 3. Find the applicable vacation (lowest originalIndex wins)
+    let vacation: typeof sortedVacations[0] | undefined;
+    if (activeVacations.length > 0) {
+      vacation = activeVacations[0];
+      // If multiple overlap, find the one that appeared first in the original list
+      if (activeVacations.length > 1) {
+        for (let i = 1; i < activeVacations.length; i++) {
+          if (activeVacations[i].originalIndex < vacation.originalIndex) {
+            vacation = activeVacations[i];
+          }
+        }
+      }
+    }
 
     if (vacation) {
       types.push(DayType.PLANNED_VACATION);
