@@ -9,7 +9,8 @@ import {
   getWeeksInRange,
   getWeekEnd,
   parseDate,
-  formatDate
+  formatDate,
+  parseDateToInteger
 } from './dateUtils';
 import { calculateAccrualForRange } from './accrualCalculator';
 import { getRDODatesInRange, calculateVacationHoursForRange, getVacationHours } from './workScheduleUtils';
@@ -36,7 +37,7 @@ export const calculateWeeklyBalances = (
   const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
   // Pre-calculate holiday set for fast lookup in calculateVacationHoursForRange
-  const holidayDatesSet = new Set(holidays.map(h => h.date));
+  const holidayDatesSet = new Set(holidays.map(h => parseDateToInteger(h.date)));
 
   // Optimization: Pre-process holidays with timestamps to avoid repeated parsing in loop
   const processedHolidays = holidays.map(h => ({
