@@ -197,6 +197,15 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
           {recommendations.map((rec, index) => {
             const scoreInfo = getScoreLabel(rec.score);
 
+            // Extract percentage calculations for accessibility
+            const efficiencyPercent = Math.min(rec.vacationHours === 0
+              ? (rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0 * 100
+              : Math.min(rec.efficiency, 5.0) / 5.0 * 100, 100);
+
+            const bracketingPercent = rec.isBracketed ? 100 : 0;
+
+            const lengthPercent = Math.min((Math.log(rec.totalDays) / Math.log(14)) * 100, 100);
+
             return (
               <div key={rec.id} className="recommendation-card">
                 <div className="card-header">
@@ -232,30 +241,52 @@ const VacationRecommender: React.FC<VacationRecommenderProps> = ({
                   </div>
                   <div className="score-components">
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={Math.round(efficiencyPercent)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Efficiency score: ${Math.round(efficiencyPercent)}%`}
+                        title={`Efficiency score: ${Math.round(efficiencyPercent)}%`}
+                      >
                         <div
                           className="score-bar efficiency-bar"
-                          style={{ width: `${Math.min(rec.vacationHours === 0
-                            ? (rec.totalDays >= 4 ? 3.0 : 1.5) / 5.0 * 100
-                            : Math.min(rec.efficiency, 5.0) / 5.0 * 100, 100)}%` }}
+                          style={{ width: `${efficiencyPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Efficiency (50%)</span>
                     </div>
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={rec.isBracketed ? 100 : 0}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Bracketing score: ${rec.isBracketed ? '100' : '0'}%`}
+                        title={`Bracketing score: ${rec.isBracketed ? '100' : '0'}%`}
+                      >
                         <div
                           className="score-bar bracketing-bar"
-                          style={{ width: rec.isBracketed ? '100%' : '0%' }}
+                          style={{ width: `${bracketingPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Bracketing (25%)</span>
                     </div>
                     <div className="score-component">
-                      <div className="score-bar-container">
+                      <div
+                        className="score-bar-container"
+                        role="progressbar"
+                        aria-valuenow={Math.round(lengthPercent)}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Length score: ${Math.round(lengthPercent)}%`}
+                        title={`Length score: ${Math.round(lengthPercent)}%`}
+                      >
                         <div
                           className="score-bar length-bar"
-                          style={{ width: `${Math.min((Math.log(rec.totalDays) / Math.log(14)) * 100, 100)}%` }}
+                          style={{ width: `${lengthPercent}%` }}
                         />
                       </div>
                       <span className="score-label">Length (25%)</span>
