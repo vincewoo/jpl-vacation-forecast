@@ -1,6 +1,6 @@
 import { WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
-import { parseDate, formatDate } from './dateUtils';
+import { parseDate, dateToInteger, parseDateToInteger } from './dateUtils';
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -144,24 +144,23 @@ export const calculateVacationHoursForRange = (
   endDate: Date,
   workSchedule: WorkSchedule,
   holidays: Holiday[] = [],
-  // Optimization: Allow passing a pre-calculated Set of holiday dates to avoid re-creation in loops
-  precalculatedHolidayDates?: Set<string>
+  // Optimization: Allow passing a pre-calculated Set of holiday integers to avoid re-creation in loops
+  precalculatedHolidayIntegers?: Set<number>
 ): number => {
   let totalHours = 0;
   const currentDate = new Date(startDate);
 
   // Optimize: Use pre-calculated set if available, otherwise create one
-  // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
-  // We use direct string comparison for performance, avoiding redundant parsing.
-  const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
+  // We use integers (YYYYMMDD) for performance, avoiding string allocation and parsing in the loop.
+  const holidayIntegers = precalculatedHolidayIntegers || new Set(holidays.map(h => parseDateToInteger(h.date)));
 
   // Loop without allocating array
   while (currentDate <= endDate) {
-    // Use optimized formatDate
-    const dateStr = formatDate(currentDate);
+    // Use optimized integer conversion
+    const dateInt = dateToInteger(currentDate);
 
     // Skip this date if it's a holiday
-    if (!holidayDates.has(dateStr)) {
+    if (!holidayIntegers.has(dateInt)) {
       totalHours += getWorkHoursForDay(currentDate, workSchedule);
     }
 
@@ -189,9 +188,10 @@ export const isRDO = (date: Date, workSchedule: WorkSchedule): boolean => {
 export const getVacationHours = (
   vacation: { startDate: string; endDate: string },
   workSchedule: WorkSchedule,
-  holidays: Holiday[] = []
+  holidays: Holiday[] = [],
+  precalculatedHolidayIntegers?: Set<number>
 ): number => {
   const startDate = parseDate(vacation.startDate);
   const endDate = parseDate(vacation.endDate);
-  return calculateVacationHoursForRange(startDate, endDate, workSchedule, holidays);
+  return calculateVacationHoursForRange(startDate, endDate, workSchedule, holidays, precalculatedHolidayIntegers);
 };

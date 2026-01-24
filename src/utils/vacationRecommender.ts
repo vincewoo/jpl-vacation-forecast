@@ -1,5 +1,5 @@
 import { WorkSchedule, Holiday, PlannedVacation } from '../types';
-import { parseDate, formatDate, getDatesInRange } from './dateUtils';
+import { parseDate, formatDate, getDatesInRange, parseDateToInteger } from './dateUtils';
 import { isWeekend, isRDO, calculateVacationHoursForRange } from './workScheduleUtils';
 
 export interface VacationRecommendation {
@@ -188,7 +188,8 @@ const findOpportunitiesAroundDate = (
   anchorDate: Date,
   workSchedule: WorkSchedule,
   holidays: Holiday[],
-  minEfficiency: number = 1.0
+  minEfficiency: number = 1.0,
+  holidayIntegersSet?: Set<number>
 ): VacationRecommendation[] => {
   const recommendations: VacationRecommendation[] = [];
 
@@ -207,7 +208,8 @@ const findOpportunitiesAroundDate = (
       startDate,
       anchorDate,
       workSchedule,
-      holidays
+      holidays,
+      holidayIntegersSet
     );
 
     const totalDays = daysBefore + 1;
@@ -263,7 +265,8 @@ const findOpportunitiesAroundDate = (
       anchorDate,
       endDate,
       workSchedule,
-      holidays
+      holidays,
+      holidayIntegersSet
     );
 
     const totalDays = daysAfter + 1;
@@ -324,7 +327,8 @@ const findOpportunitiesAroundDate = (
         startDate,
         endDate,
         workSchedule,
-        holidays
+        holidays,
+        holidayIntegersSet
       );
 
       const totalDays = daysBefore + daysAfter + 1;
@@ -419,6 +423,9 @@ export const generateVacationRecommendations = (
 ): VacationRecommendation[] => {
   const allRecommendations: VacationRecommendation[] = [];
 
+  // Pre-calculate holiday integer set once for all calculations
+  const holidayIntegersSet = new Set(holidays.map(h => parseDateToInteger(h.date)));
+
   // Find all anchor dates (holidays and RDOs)
   const anchorDates: Date[] = [];
 
@@ -452,7 +459,8 @@ export const generateVacationRecommendations = (
       anchor,
       workSchedule,
       holidays,
-      1.5 // Minimum efficiency threshold: 1.5x value (e.g., 9 days off for 6 work days = 1.5x)
+      1.5, // Minimum efficiency threshold: 1.5x value (e.g., 9 days off for 6 work days = 1.5x)
+      holidayIntegersSet
     );
     allRecommendations.push(...opportunities);
   }
