@@ -55,8 +55,16 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onNewUser }) => {
                 onClick={handleExistingUser}
                 className="choice-button secondary-button"
                 disabled={loading || signingIn}
+                aria-busy={signingIn}
               >
-                {signingIn ? 'Signing in...' : 'Sign in with Google'}
+                {signingIn ? (
+                  <>
+                    <span className="spinner-sm" aria-hidden="true" />
+                    <span>Signing in...</span>
+                  </>
+                ) : (
+                  'Sign in with Google'
+                )}
               </button>
             </div>
           )}
