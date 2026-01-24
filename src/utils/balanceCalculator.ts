@@ -9,7 +9,8 @@ import {
   getWeeksInRange,
   getWeekEnd,
   parseDate,
-  formatDate
+  formatDate,
+  parseDateToInteger
 } from './dateUtils';
 import { calculateAccrualForRange } from './accrualCalculator';
 import { getRDODatesInRange, calculateVacationHoursForRange, getVacationHours } from './workScheduleUtils';
@@ -36,7 +37,7 @@ export const calculateWeeklyBalances = (
   const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
   // Pre-calculate holiday set for fast lookup in calculateVacationHoursForRange
-  const holidayDatesSet = new Set(holidays.map(h => h.date));
+  const holidayIntegersSet = new Set(holidays.map(h => parseDateToInteger(h.date)));
 
   // Optimization: Pre-process holidays with timestamps to avoid repeated parsing in loop
   const processedHolidays = holidays.map(h => ({
@@ -138,7 +139,7 @@ export const calculateWeeklyBalances = (
         effectiveEnd,
         userProfile.workSchedule,
         holidays,
-        holidayDatesSet
+        holidayIntegersSet
       );
 
       // If Personal Day is used for this vacation, subtract 8 hours from the cost
@@ -270,6 +271,9 @@ export const calculateProjectedBalance = (
   const today = new Date();
   const profileStartDate = parseDate(userProfile.startDate);
 
+  // Pre-calculate holiday set for fast lookup
+  const holidayIntegersSet = new Set(holidays.map(h => parseDateToInteger(h.date)));
+
   // Calculate accrual from today to target date
   const accrued = calculateAccrualForRange(profileStartDate, today, targetDate);
 
@@ -280,7 +284,7 @@ export const calculateProjectedBalance = (
       return vacEnd <= targetDate;
     })
     .reduce((sum, v) => {
-      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
+      const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays, holidayIntegersSet);
       // Apply Personal Day deduction
       const deduction = v.personalDayUsed ? 8 : 0;
       return sum + Math.max(0, vacationHours - deduction);
