@@ -54,6 +54,13 @@ export const mapWeeklyBalancesToDays = (
     };
   });
 
+  // Sort vacations by start date for Sweep Line algorithm
+  // This allows us to process vacations in O(N + M) instead of O(N * M)
+  processedVacations.sort((a, b) => a.start - b.start);
+
+  let nextVacationIdx = 0;
+  let activeVacations: typeof processedVacations = [];
+
   // Iterate through dates without creating intermediate array
   // Optimization: Use a while loop instead of getDatesInRange to avoid allocating
   // a large array of Date objects, reducing garbage collection pressure.
@@ -83,10 +90,28 @@ export const mapWeeklyBalancesToDays = (
       types.push(DayType.HOLIDAY);
     }
 
-    // Check if in vacation
-    const vacation = processedVacations.find(v => {
-      return dateTime >= v.start && dateTime <= v.end;
-    });
+    // Update active vacations
+    // 1. Add new active vacations
+    while (
+      nextVacationIdx < processedVacations.length &&
+      processedVacations[nextVacationIdx]!.start <= dateTime
+    ) {
+      activeVacations.push(processedVacations[nextVacationIdx]!);
+      nextVacationIdx++;
+    }
+
+    // 2. Remove ended vacations
+    // Use in-place removal (splice) to avoid allocating new arrays inside the loop
+    if (activeVacations.length > 0) {
+      for (let i = activeVacations.length - 1; i >= 0; i--) {
+        if (activeVacations[i]!.end < dateTime) {
+          activeVacations.splice(i, 1);
+        }
+      }
+    }
+
+    // Check if in vacation (pick the first active one)
+    const vacation = activeVacations[0];
 
     if (vacation) {
       types.push(DayType.PLANNED_VACATION);
