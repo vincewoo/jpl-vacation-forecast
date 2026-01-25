@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Security Headers -->
+    <!-- CSP allows unsafe-inline for scripts/styles because this is a static site (GitHub Pages) without nonce support -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://apis.google.com https://www.gstatic.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com; img-src 'self' data: https://lh3.googleusercontent.com;" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>JPL Vacation Forecast</title>
   </head>
   <body>
