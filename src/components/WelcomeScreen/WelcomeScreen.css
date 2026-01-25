@@ -206,3 +206,22 @@
     min-height: auto;
   }
 }
+
+/* Loading spinner for buttons */
+.button-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: spin-button 0.8s linear infinite;
+  vertical-align: text-bottom;
+}
+
+@keyframes spin-button {
+  to {
+    transform: rotate(360deg);
+  }
+}
