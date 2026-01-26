@@ -9,7 +9,8 @@ import {
   getWeeksInRange,
   getWeekEnd,
   parseDate,
-  formatDate
+  formatDate,
+  parseDateToInteger
 } from './dateUtils';
 import { calculateAccrualForRange } from './accrualCalculator';
 import { getRDODatesInRange, calculateVacationHoursForRange, getVacationHours } from './workScheduleUtils';
@@ -35,8 +36,8 @@ export const calculateWeeklyBalances = (
   const profileStartDate = parseDate(userProfile.startDate);
   const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
-  // Pre-calculate holiday set for fast lookup in calculateVacationHoursForRange
-  const holidayDatesSet = new Set(holidays.map(h => h.date));
+  // Optimization: Integer-based holiday set for faster lookups in loop (avoids string allocation)
+  const holidayIntegersSet = new Set(holidays.map(h => parseDateToInteger(h.date)));
 
   // Optimization: Pre-process holidays with timestamps to avoid repeated parsing in loop
   const processedHolidays = holidays.map(h => ({
@@ -138,7 +139,8 @@ export const calculateWeeklyBalances = (
         effectiveEnd,
         userProfile.workSchedule,
         holidays,
-        holidayDatesSet
+        undefined,
+        holidayIntegersSet
       );
 
       // If Personal Day is used for this vacation, subtract 8 hours from the cost

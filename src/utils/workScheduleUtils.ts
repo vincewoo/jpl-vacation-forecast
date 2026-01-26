@@ -1,6 +1,6 @@
 import { WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
-import { parseDate, formatDate } from './dateUtils';
+import { parseDate, formatDate, dateToInteger } from './dateUtils';
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -145,28 +145,39 @@ export const calculateVacationHoursForRange = (
   workSchedule: WorkSchedule,
   holidays: Holiday[] = [],
   // Optimization: Allow passing a pre-calculated Set of holiday dates to avoid re-creation in loops
-  precalculatedHolidayDates?: Set<string>
+  precalculatedHolidayDates?: Set<string>,
+  // Optimization: Integer-based set for faster lookups (YYYYMMDD) - Preferred
+  precalculatedHolidayIntegers?: Set<number>
 ): number => {
   let totalHours = 0;
   const currentDate = new Date(startDate);
 
-  // Optimize: Use pre-calculated set if available, otherwise create one
-  // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
-  // We use direct string comparison for performance, avoiding redundant parsing.
-  const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
-
-  // Loop without allocating array
-  while (currentDate <= endDate) {
-    // Use optimized formatDate
-    const dateStr = formatDate(currentDate);
-
-    // Skip this date if it's a holiday
-    if (!holidayDates.has(dateStr)) {
-      totalHours += getWorkHoursForDay(currentDate, workSchedule);
+  if (precalculatedHolidayIntegers) {
+    // Fast path: Use integer comparisons to avoid string allocation in loop
+    while (currentDate <= endDate) {
+      const dateInt = dateToInteger(currentDate);
+      if (!precalculatedHolidayIntegers.has(dateInt)) {
+        totalHours += getWorkHoursForDay(currentDate, workSchedule);
+      }
+      currentDate.setDate(currentDate.getDate() + 1);
     }
+  } else {
+    // Legacy path: Use string comparisons
+    // Optimize: Use pre-calculated set if available, otherwise create one
+    const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
 
-    // Move to next day
-    currentDate.setDate(currentDate.getDate() + 1);
+    while (currentDate <= endDate) {
+      // Use optimized formatDate
+      const dateStr = formatDate(currentDate);
+
+      // Skip this date if it's a holiday
+      if (!holidayDates.has(dateStr)) {
+        totalHours += getWorkHoursForDay(currentDate, workSchedule);
+      }
+
+      // Move to next day
+      currentDate.setDate(currentDate.getDate() + 1);
+    }
   }
 
   return totalHours;
