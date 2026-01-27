@@ -102,3 +102,27 @@ export const getDatesInRange = (start: Date, end: Date): Date[] => {
 
   return dates;
 };
+
+/**
+ * Convert Date object to integer YYYYMMDD
+ * Optimized to avoid string allocation
+ */
+export const dateToInteger = (date: Date): number => {
+  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+};
+
+/**
+ * Parse YYYY-MM-DD string to integer YYYYMMDD
+ * Optimized to avoid intermediate string allocations
+ */
+export const parseDateToInteger = (dateString: string): number => {
+  // Fast path for standard YYYY-MM-DD format
+  if (dateString.length === 10) {
+    const year = +dateString.substring(0, 4);
+    const month = +dateString.substring(5, 7);
+    const day = +dateString.substring(8, 10);
+    return year * 10000 + month * 100 + day;
+  }
+  // Fallback (should ideally not be reached if data is consistent)
+  return parseInt(dateString.replace(/-/g, ''), 10);
+};

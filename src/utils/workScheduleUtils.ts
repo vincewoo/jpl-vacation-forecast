@@ -1,6 +1,6 @@
 import { WorkSchedule, Holiday } from '../types';
 import { SCHEDULE_CONFIGS } from '../constants/jplConstants';
-import { parseDate, formatDate } from './dateUtils';
+import { parseDate, dateToInteger, parseDateToInteger } from './dateUtils';
 
 /**
  * Check if a date is a weekend (Saturday or Sunday)
@@ -145,23 +145,33 @@ export const calculateVacationHoursForRange = (
   workSchedule: WorkSchedule,
   holidays: Holiday[] = [],
   // Optimization: Allow passing a pre-calculated Set of holiday dates to avoid re-creation in loops
-  precalculatedHolidayDates?: Set<string>
+  precalculatedHolidayDates?: Set<string>,
+  // Optimization: Allow passing a pre-calculated Set of holiday integers (YYYYMMDD)
+  precalculatedHolidayIntegers?: Set<number>
 ): number => {
   let totalHours = 0;
   const currentDate = new Date(startDate);
 
-  // Optimize: Use pre-calculated set if available, otherwise create one
-  // Holiday dates are consistently "YYYY-MM-DD" in holidays.json and typed as string.
-  // We use direct string comparison for performance, avoiding redundant parsing.
-  const holidayDates = precalculatedHolidayDates || new Set(holidays.map(h => h.date));
+  // Optimize: Use pre-calculated integer set if available.
+  // If not, build it from the string set or the holidays array.
+  let holidayIntegers: Set<number>;
+
+  if (precalculatedHolidayIntegers) {
+    holidayIntegers = precalculatedHolidayIntegers;
+  } else if (precalculatedHolidayDates) {
+    holidayIntegers = new Set();
+    precalculatedHolidayDates.forEach(d => holidayIntegers.add(parseDateToInteger(d)));
+  } else {
+    holidayIntegers = new Set(holidays.map(h => parseDateToInteger(h.date)));
+  }
 
   // Loop without allocating array
   while (currentDate <= endDate) {
-    // Use optimized formatDate
-    const dateStr = formatDate(currentDate);
+    // Use optimized dateToInteger
+    const dateInt = dateToInteger(currentDate);
 
     // Skip this date if it's a holiday
-    if (!holidayDates.has(dateStr)) {
+    if (!holidayIntegers.has(dateInt)) {
       totalHours += getWorkHoursForDay(currentDate, workSchedule);
     }
 
