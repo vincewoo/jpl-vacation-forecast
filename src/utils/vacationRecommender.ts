@@ -1,5 +1,5 @@
 import { WorkSchedule, Holiday, PlannedVacation } from '../types';
-import { parseDate, formatDate, getDatesInRange } from './dateUtils';
+import { parseDate, formatDate, dateToInteger, parseDateToInteger } from './dateUtils';
 import { isWeekend, isRDO, calculateVacationHoursForRange } from './workScheduleUtils';
 
 export interface VacationRecommendation {
@@ -106,26 +106,36 @@ const getHolidayName = (date: Date, holidays: Holiday[]): string | null => {
 
 /**
  * Count free days in a range
+ * Optimized to avoid array allocation
  */
 const countFreeDays = (
   startDate: Date,
   endDate: Date,
   workSchedule: WorkSchedule,
-  holidays: Holiday[]
+  holidays: Holiday[],
+  holidayIntegers?: Set<number>
 ): { weekends: number; holidays: number; rdos: number } => {
-  const dates = getDatesInRange(startDate, endDate);
+  // Optimization: pass pre-calculated holiday integers if available
+  const holidayInts = holidayIntegers || new Set(holidays.map(h => parseDateToInteger(h.date)));
+
   let weekends = 0;
   let holidayCount = 0;
   let rdos = 0;
 
-  for (const date of dates) {
-    if (isWeekend(date)) {
+  const current = new Date(startDate);
+  while (current <= endDate) {
+    // Check holiday first (fastest check with Set)
+    const dateInt = dateToInteger(current);
+
+    if (isWeekend(current)) {
       weekends++;
-    } else if (isHoliday(date, holidays)) {
+    } else if (holidayInts.has(dateInt)) {
       holidayCount++;
-    } else if (isRDO(date, workSchedule)) {
+    } else if (isRDO(current, workSchedule)) {
       rdos++;
     }
+
+    current.setDate(current.getDate() + 1);
   }
 
   return { weekends, holidays: holidayCount, rdos };
@@ -188,7 +198,8 @@ const findOpportunitiesAroundDate = (
   anchorDate: Date,
   workSchedule: WorkSchedule,
   holidays: Holiday[],
-  minEfficiency: number = 1.0
+  minEfficiency: number = 1.0,
+  holidayIntegers?: Set<number>
 ): VacationRecommendation[] => {
   const recommendations: VacationRecommendation[] = [];
 
@@ -207,7 +218,9 @@ const findOpportunitiesAroundDate = (
       startDate,
       anchorDate,
       workSchedule,
-      holidays
+      holidays,
+      undefined, // precalculatedHolidayDates
+      holidayIntegers // precalculatedHolidayIntegers
     );
 
     const totalDays = daysBefore + 1;
@@ -234,7 +247,7 @@ const findOpportunitiesAroundDate = (
     }
 
     if (efficiency >= minEfficiency) {
-      const freeDays = countFreeDays(startDate, anchorDate, workSchedule, holidays);
+      const freeDays = countFreeDays(startDate, anchorDate, workSchedule, holidays, holidayIntegers);
       const context = generateContext(startDate, anchorDate, freeDays, holidays);
       const isBracketed = isBracketedVacation(startDate, anchorDate, workSchedule, holidays);
       const score = calculateScore(efficiency, isBracketed, totalDays, vacationHours);
@@ -263,7 +276,9 @@ const findOpportunitiesAroundDate = (
       anchorDate,
       endDate,
       workSchedule,
-      holidays
+      holidays,
+      undefined, // precalculatedHolidayDates
+      holidayIntegers // precalculatedHolidayIntegers
     );
 
     const totalDays = daysAfter + 1;
@@ -288,7 +303,7 @@ const findOpportunitiesAroundDate = (
     }
 
     if (efficiency >= minEfficiency) {
-      const freeDays = countFreeDays(anchorDate, endDate, workSchedule, holidays);
+      const freeDays = countFreeDays(anchorDate, endDate, workSchedule, holidays, holidayIntegers);
       const context = generateContext(anchorDate, endDate, freeDays, holidays);
       const isBracketed = isBracketedVacation(anchorDate, endDate, workSchedule, holidays);
       const score = calculateScore(efficiency, isBracketed, totalDays, vacationHours);
@@ -324,7 +339,9 @@ const findOpportunitiesAroundDate = (
         startDate,
         endDate,
         workSchedule,
-        holidays
+        holidays,
+        undefined, // precalculatedHolidayDates
+        holidayIntegers // precalculatedHolidayIntegers
       );
 
       const totalDays = daysBefore + daysAfter + 1;
@@ -349,7 +366,7 @@ const findOpportunitiesAroundDate = (
       }
 
       if (efficiency >= minEfficiency) {
-        const freeDays = countFreeDays(startDate, endDate, workSchedule, holidays);
+        const freeDays = countFreeDays(startDate, endDate, workSchedule, holidays, holidayIntegers);
         const context = generateContext(startDate, endDate, freeDays, holidays);
         const isBracketed = isBracketedVacation(startDate, endDate, workSchedule, holidays);
         const score = calculateScore(efficiency, isBracketed, totalDays, vacationHours);
@@ -419,6 +436,9 @@ export const generateVacationRecommendations = (
 ): VacationRecommendation[] => {
   const allRecommendations: VacationRecommendation[] = [];
 
+  // Optimization: Pre-calculate holiday integers once
+  const holidayIntegers = new Set(holidays.map(h => parseDateToInteger(h.date)));
+
   // Find all anchor dates (holidays and RDOs)
   const anchorDates: Date[] = [];
 
@@ -452,7 +472,8 @@ export const generateVacationRecommendations = (
       anchor,
       workSchedule,
       holidays,
-      1.5 // Minimum efficiency threshold: 1.5x value (e.g., 9 days off for 6 work days = 1.5x)
+      1.5, // Minimum efficiency threshold: 1.5x value (e.g., 9 days off for 6 work days = 1.5x)
+      holidayIntegers
     );
     allRecommendations.push(...opportunities);
   }
