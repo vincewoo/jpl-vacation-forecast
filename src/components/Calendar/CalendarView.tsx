@@ -9,7 +9,7 @@ import {
   UserProfile,
   DayType,
 } from '../../types';
-import { formatDate, parseDate } from '../../utils/dateUtils';
+import { formatDate, parseDate, dateToInteger } from '../../utils/dateUtils';
 import { mapWeeklyBalancesToDays } from '../../utils/calendarDataMapper';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import CalendarTile from './CalendarTile';
@@ -128,7 +128,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
   // Handle day click
   const handleDayClick = (date: Date) => {
-    const dateKey = formatDate(date);
+    const dateKey = dateToInteger(date);
     const dayInfo = dayDataMap.get(dateKey);
 
     // Case 1: Clicking on existing vacation -> Edit
@@ -287,7 +287,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         classes.push('react-calendar__tile--next-month');
       }
 
-      const dayInfo = dayDataMap.get(formatDate(date));
+      const dayInfo = dayDataMap.get(dateToInteger(date));
 
       if (dayInfo?.isInVacation) classes.push('react-calendar__tile--vacation');
       if (dayInfo?.isHoliday) classes.push('react-calendar__tile--holiday');
@@ -322,7 +322,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     ({ date, view }: { date: Date; view: string }) => {
       if (view !== 'month') return null;
 
-      const dayInfo = dayDataMap.get(formatDate(date));
+      const dayInfo = dayDataMap.get(dateToInteger(date));
       const isInRange =
         selectionRange &&
         date >= selectionRange.start &&

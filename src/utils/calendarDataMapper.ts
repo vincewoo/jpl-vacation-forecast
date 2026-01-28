@@ -8,7 +8,8 @@ import {
 } from '../types';
 import {
   parseDate,
-  formatDate
+  dateToInteger,
+  parseDateToInteger
 } from './dateUtils';
 import { isWeekend, isRDO, getWorkHoursForDay, getVacationHours } from './workScheduleUtils';
 
@@ -23,17 +24,19 @@ export const mapWeeklyBalancesToDays = (
   workSchedule: WorkSchedule,
   startDate: Date,
   endDate: Date
-): Map<string, CalendarDayInfo> => {
-  const dayMap = new Map<string, CalendarDayInfo>();
+): Map<number, CalendarDayInfo> => {
+  const dayMap = new Map<number, CalendarDayInfo>();
 
   // Optimize lookups
-  const holidayMap = new Map<string, Holiday>();
-  holidays.forEach(h => holidayMap.set(h.date, h));
+  // Use integer keys for O(1) lookups without string allocation
+  const holidayMap = new Map<number, Holiday>();
+  holidays.forEach(h => holidayMap.set(parseDateToInteger(h.date), h));
 
-  const weeklyBalanceMap = new Map<string, WeeklyBalance>();
+  const weeklyBalanceMap = new Map<number, WeeklyBalance>();
   weeklyBalances.forEach(wb => {
     // We map by week end date string as that's what's queried for Sundays
-    const key = formatDate(parseDate(wb.weekEndDate));
+    // wb.weekEndDate is YYYY-MM-DD
+    const key = parseDateToInteger(wb.weekEndDate);
     weeklyBalanceMap.set(key, wb);
   });
 
@@ -49,7 +52,7 @@ export const mapWeeklyBalancesToDays = (
       original: v,
       start: start.getTime(),
       end: parseDate(v.endDate).getTime(),
-      startDateKey: formatDate(start), // Pre-calculate for isPersonalDayStart check
+      startDateKey: dateToInteger(start), // Pre-calculate for isPersonalDayStart check
       totalHours
     };
   });
@@ -62,7 +65,8 @@ export const mapWeeklyBalancesToDays = (
   while (currentDate <= endDate) {
     // Create new Date instance for the map value
     const date = new Date(currentDate);
-    const dateKey = formatDate(date);
+    // Use integer key for map
+    const dateKey = dateToInteger(date);
     const dateTime = date.getTime();
     const types: DayType[] = [];
 
