@@ -190,6 +190,7 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Summer vacation"
+              maxLength={500}
             />
           </div>
 
