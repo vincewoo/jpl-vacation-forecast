@@ -4,6 +4,17 @@
     <meta charset="UTF-8" />
     <!-- <link rel="icon" type="image/svg+xml" href="/vite.svg" /> -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content="
+      default-src 'self';
+      script-src 'self' 'unsafe-inline';
+      style-src 'self' 'unsafe-inline';
+      img-src 'self' data: https://www.gstatic.com https://*.googleusercontent.com;
+      connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://identitytoolkit.googleapis.com https://securetoken.googleapis.com https://firestore.googleapis.com;
+      frame-src 'self' https://*.firebaseapp.com;
+      object-src 'none';
+      base-uri 'self';
+    ">
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
     <title>JPL Vacation Forecast</title>
     <script type="module" crossorigin src="/jpl-vacation-forecast/assets/index-fIWZ4qss.js"></script>
     <link rel="stylesheet" crossorigin href="/jpl-vacation-forecast/assets/index-Bq48qtRz.css">
