@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, ScheduleType } from '../../types';
 import { parseDate } from '../../utils/dateUtils';
+import { MAX_VACATION_BALANCE } from '../../utils/validation';
 import './UserInputForm.css';
 
 interface UserInputFormProps {
@@ -14,6 +15,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
   const [balanceAsOfDate, setBalanceAsOfDate] = useState('');
   const [scheduleType, setScheduleType] = useState<ScheduleType>('5/40');
   const [personalDayUsedInStartYear, setPersonalDayUsedInStartYear] = useState(false);
+  const [error, setError] = useState('');
 
   // Check if selected balanceAsOfDate is a Sunday
   const isSunday = (dateStr: string) => {
@@ -30,10 +32,17 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
+
+    const balance = parseFloat(currentBalance);
+    if (balance > MAX_VACATION_BALANCE) {
+      setError(`Balance cannot exceed ${MAX_VACATION_BALANCE} hours`);
+      return;
+    }
 
     const profile: UserProfile = {
       startDate,
-      currentBalance: parseFloat(currentBalance),
+      currentBalance: balance,
       balanceAsOfDate,
       workSchedule: {
         type: scheduleType,
@@ -82,7 +91,7 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             required
             aria-describedby="currentBalance-help"
           />
-          <small id="currentBalance-help">Include any carryover from previous year</small>
+          <small id="currentBalance-help">Include any carryover from previous year (max {MAX_VACATION_BALANCE})</small>
         </div>
 
         <div className="form-group">
@@ -149,6 +158,8 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
             </label>
           </div>
         </fieldset>
+
+        {error && <div className="error-message" role="alert">{error}</div>}
 
         <button type="submit" className="submit-button">
           Start Forecasting

@@ -2,6 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import { parseDate } from '../../utils/dateUtils';
+import { MAX_DESCRIPTION_LENGTH } from '../../utils/validation';
 
 interface VacationEditModalProps {
   vacation: PlannedVacation | null;
@@ -76,6 +77,11 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
 
     if (parseDate(endDate) < parseDate(startDate)) {
       setError('End date must be after start date');
+      return;
+    }
+
+    if (description.length > MAX_DESCRIPTION_LENGTH) {
+      setError(`Description must be ${MAX_DESCRIPTION_LENGTH} characters or less`);
       return;
     }
 
@@ -190,7 +196,11 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               placeholder="e.g., Summer vacation"
+              maxLength={MAX_DESCRIPTION_LENGTH}
             />
+            <small className="field-help-text">
+              {description.length}/{MAX_DESCRIPTION_LENGTH} characters
+            </small>
           </div>
 
           <div className="form-group checkbox-group">
