@@ -13,9 +13,9 @@ export const isValidUserProfile = (data: any): data is UserProfile => {
   if (!data || typeof data !== 'object') return false;
 
   // Check required fields
-  if (typeof data.startDate !== 'string') return false;
-  if (typeof data.currentBalance !== 'number') return false;
-  if (typeof data.balanceAsOfDate !== 'string') return false;
+  if (typeof data.startDate !== 'string' || data.startDate.length > MAX_DATE_LENGTH) return false;
+  if (typeof data.currentBalance !== 'number' || data.currentBalance > MAX_VACATION_BALANCE) return false;
+  if (typeof data.balanceAsOfDate !== 'string' || data.balanceAsOfDate.length > MAX_DATE_LENGTH) return false;
 
   // Check workSchedule
   if (!data.workSchedule || typeof data.workSchedule !== 'object') return false;
@@ -34,12 +34,12 @@ export const isValidUserProfile = (data: any): data is UserProfile => {
 export const isValidPlannedVacation = (data: any): data is PlannedVacation => {
   if (!data || typeof data !== 'object') return false;
 
-  if (typeof data.id !== 'string') return false;
-  if (typeof data.startDate !== 'string') return false;
-  if (typeof data.endDate !== 'string') return false;
+  if (typeof data.id !== 'string' || data.id.length > MAX_ID_LENGTH) return false;
+  if (typeof data.startDate !== 'string' || data.startDate.length > MAX_DATE_LENGTH) return false;
+  if (typeof data.endDate !== 'string' || data.endDate.length > MAX_DATE_LENGTH) return false;
 
   // Optional fields
-  if (data.description !== undefined && typeof data.description !== 'string') return false;
+  if (data.description !== undefined && (typeof data.description !== 'string' || data.description.length > MAX_DESCRIPTION_LENGTH)) return false;
   if (data.personalDayUsed !== undefined && typeof data.personalDayUsed !== 'boolean') return false;
 
   return true;
@@ -59,8 +59,8 @@ export const isValidPlannedVacationArray = (data: any): data is PlannedVacation[
 export const isValidHoliday = (data: any): data is Holiday => {
   if (!data || typeof data !== 'object') return false;
 
-  if (typeof data.name !== 'string') return false;
-  if (typeof data.date !== 'string') return false;
+  if (typeof data.name !== 'string' || data.name.length > MAX_NAME_LENGTH) return false;
+  if (typeof data.date !== 'string' || data.date.length > MAX_DATE_LENGTH) return false;
   if (typeof data.hours !== 'number') return false;
 
   return true;
