@@ -1,5 +1,11 @@
 import { UserProfile, PlannedVacation, Holiday, ScheduleType } from '../types';
 
+export const MAX_DESCRIPTION_LENGTH = 500;
+export const MAX_VACATION_BALANCE = 2000;
+export const MAX_ID_LENGTH = 100;
+export const MAX_DATE_LENGTH = 10;
+export const MAX_NAME_LENGTH = 100;
+
 /**
  * Type guard for UserProfile
  */
