@@ -7,3 +7,8 @@
 **Vulnerability:** The application was automatically persisting data from Firebase to `localStorage` without validation. If the cloud data was corrupted or tampered with, it would permanently corrupt the local client state, leading to a persistent Denial of Service or potential injection attacks.
 **Learning:** `localStorage` acts as a second persistence layer. Validating data only at the UI layer (React components) is insufficient if the synchronization layer (Service) blindly writes invalid data to the disk.
 **Prevention:** Implement validation at the ingress point (the sync service) before writing to any persistence layer, not just before rendering.
+
+## 2026-01-09 - Client-Side Denial of Service (DoS) via Date Loop
+**Vulnerability:** Functions that loop over user-defined date ranges (like accrual calculators) can be manipulated to run for millions of iterations, freezing the browser, if date inputs are not bounded.
+**Learning:** Validating date formats is insufficient; logical constraints (e.g., maximum duration, reasonable year range) are critical to prevent resource exhaustion in algorithms with time complexity dependent on the date difference.
+**Prevention:** Implement strict input validation for date ranges, ensuring `startDate` and `endDate` are within a reasonable timeframe (e.g., 60 days for a single vacation entry) and logical year limits.

@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { PlannedVacation, WorkSchedule, Holiday } from '../../types';
 import { calculateVacationHoursForRange } from '../../utils/workScheduleUtils';
 import { parseDate } from '../../utils/dateUtils';
-import { MAX_DESCRIPTION_LENGTH } from '../../utils/validation';
+import { MAX_DESCRIPTION_LENGTH, MAX_VACATION_DURATION_DAYS } from '../../utils/validation';
 
 interface VacationEditModalProps {
   vacation: PlannedVacation | null;
@@ -75,8 +75,18 @@ const VacationEditModal: React.FC<VacationEditModalProps> = ({
       return;
     }
 
-    if (parseDate(endDate) < parseDate(startDate)) {
+    const start = parseDate(startDate);
+    const end = parseDate(endDate);
+
+    if (end < start) {
       setError('End date must be after start date');
+      return;
+    }
+
+    const durationMs = end.getTime() - start.getTime();
+    const durationDays = Math.ceil(durationMs / (1000 * 60 * 60 * 24));
+    if (durationDays > MAX_VACATION_DURATION_DAYS) {
+      setError(`Vacation cannot exceed ${MAX_VACATION_DURATION_DAYS} days`);
       return;
     }
 
