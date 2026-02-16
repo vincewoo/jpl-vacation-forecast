@@ -176,6 +176,14 @@ export class StorageService {
         const localItem = window.localStorage.getItem(key);
         if (localItem) {
           const value = JSON.parse(localItem);
+
+          // Validate
+          const validator = this.validators.get(key);
+          if (validator && !validator(value)) {
+            logError(`Validation failed for ${key} during sync to cloud`, { value });
+            continue;
+          }
+
           const docRef = doc(db, 'users', this.userId, 'data', key);
           await setDoc(docRef, {
             value,
