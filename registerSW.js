@@ -1,0 +1,1 @@
+if('serviceWorker' in navigator) {window.addEventListener('load', () => {navigator.serviceWorker.register('/jpl-vacation-forecast/sw.js', { scope: '/jpl-vacation-forecast/' })})}
