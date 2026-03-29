@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Dark blue background with rounded corners -->
+  <rect width="512" height="512" rx="80" fill="#1e3a5f"/>
+  <!-- Calendar body (white) -->
+  <rect x="80" y="128" width="352" height="304" rx="24" fill="white"/>
+  <!-- Calendar header (medium blue) -->
+  <rect x="80" y="128" width="352" height="88" rx="24" fill="#2563eb"/>
+  <rect x="80" y="168" width="352" height="48" fill="#2563eb"/>
+  <!-- Binding rings -->
+  <rect x="172" y="96" width="28" height="68" rx="14" fill="#93c5fd"/>
+  <rect x="312" y="96" width="28" height="68" rx="14" fill="#93c5fd"/>
+  <!-- Calendar grid dots - row 1 -->
+  <circle cx="152" cy="272" r="18" fill="#e2e8f0"/>
+  <circle cx="216" cy="272" r="18" fill="#e2e8f0"/>
+  <circle cx="280" cy="272" r="18" fill="#e2e8f0"/>
+  <circle cx="344" cy="272" r="18" fill="#2563eb"/>
+  <!-- Calendar grid dots - row 2 -->
+  <circle cx="152" cy="336" r="18" fill="#e2e8f0"/>
+  <circle cx="216" cy="336" r="18" fill="#2563eb"/>
+  <circle cx="280" cy="336" r="18" fill="#93c5fd"/>
+  <circle cx="344" cy="336" r="18" fill="#e2e8f0"/>
+  <!-- Calendar grid dots - row 3 -->
+  <circle cx="152" cy="400" r="18" fill="#e2e8f0"/>
+  <circle cx="216" cy="400" r="18" fill="#e2e8f0"/>
+  <circle cx="280" cy="400" r="18" fill="#2563eb"/>
+  <circle cx="344" cy="400" r="18" fill="#e2e8f0"/>
+</svg>
