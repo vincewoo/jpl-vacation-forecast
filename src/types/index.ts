@@ -3,7 +3,6 @@ export type ScheduleType = '5/40' | '9/80';
 
 export interface WorkSchedule {
   type: ScheduleType;
-  rdoPattern?: 'even-fridays' | 'odd-fridays'; // Only for 9/80 schedules
 }
 
 // User Profile
