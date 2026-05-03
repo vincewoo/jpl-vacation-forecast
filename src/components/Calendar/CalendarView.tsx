@@ -131,29 +131,28 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const dateKey = dateToInteger(date);
     const dayInfo = dayDataMap.get(dateKey);
 
-    // Case 1: Clicking on existing vacation -> Edit
-    if (dayInfo?.isInVacation && dayInfo.vacationId) {
-      const vacation = plannedVacations.find((v) => v.id === dayInfo.vacationId);
-      if (vacation) {
-        setEditingVacation(vacation);
-        setShowEditModal(true);
-        cancelSelection();
-        return;
-      }
-    }
-
-    // Case 2: First click of new selection
-    if (selectionMode === 'idle') {
-      setSelectionMode('selecting');
-      setStartDate(date);
-      setError('');
-      return;
-    }
-
-    // Case 3: Second click -> Complete selection
+    // Case 1: Second click while selecting -> Complete the range
+    // This takes priority over edit so a selection can end on a date that
+    // happens to fall inside an existing vacation.
     if (selectionMode === 'selecting' && startDate) {
       const [start, end] =
         date < startDate ? [date, startDate] : [startDate, date];
+
+      // Reject ranges that overlap an existing vacation so we don't silently
+      // create duplicates. The user can cancel and edit the existing one instead.
+      const overlap = plannedVacations.find((v) => {
+        const vStart = parseDate(v.startDate);
+        const vEnd = parseDate(v.endDate);
+        return start <= vEnd && end >= vStart;
+      });
+
+      if (overlap) {
+        setError(
+          `Selected range overlaps an existing vacation (${overlap.startDate} to ${overlap.endDate}). Edit or delete it first.`
+        );
+        cancelSelection();
+        return;
+      }
 
       // Validate affordability
       const { canAfford, projectedBalance } = canAffordVacation({
@@ -185,7 +184,23 @@ const CalendarView: React.FC<CalendarViewProps> = ({
 
       // Reset selection
       cancelSelection();
+      return;
     }
+
+    // Case 2: Idle click on existing vacation -> Edit
+    if (dayInfo?.isInVacation && dayInfo.vacationId) {
+      const vacation = plannedVacations.find((v) => v.id === dayInfo.vacationId);
+      if (vacation) {
+        setEditingVacation(vacation);
+        setShowEditModal(true);
+        return;
+      }
+    }
+
+    // Case 3: Idle click on a free date -> Start new selection
+    setSelectionMode('selecting');
+    setStartDate(date);
+    setError('');
   };
 
   const cancelSelection = () => {
