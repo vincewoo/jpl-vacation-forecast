@@ -131,12 +131,32 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     const dateKey = dateToInteger(date);
     const dayInfo = dayDataMap.get(dateKey);
 
+    console.log('[VacationSelect] click', {
+      date: formatDate(date),
+      dateKey,
+      selectionMode,
+      currentStartDate: startDate ? formatDate(startDate) : null,
+      dayInfoFound: !!dayInfo,
+      isInVacation: dayInfo?.isInVacation,
+      vacationId: dayInfo?.vacationId,
+    });
+
     // Case 1: Second click while selecting -> Complete the range
     // This takes priority over edit so a selection can end on a date that
     // happens to fall inside an existing vacation.
     if (selectionMode === 'selecting' && startDate) {
       const [start, end] =
         date < startDate ? [date, startDate] : [startDate, date];
+
+      console.log('[VacationSelect] completing range', {
+        start: formatDate(start),
+        end: formatDate(end),
+        existingVacations: plannedVacations.map((v) => ({
+          id: v.id,
+          startDate: v.startDate,
+          endDate: v.endDate,
+        })),
+      });
 
       // Reject ranges that overlap an existing vacation so we don't silently
       // create duplicates. The user can cancel and edit the existing one instead.
@@ -147,6 +167,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
       });
 
       if (overlap) {
+        console.log('[VacationSelect] BLOCKED: overlap with existing vacation', {
+          overlap: { startDate: overlap.startDate, endDate: overlap.endDate },
+          newRange: { start: formatDate(start), end: formatDate(end) },
+        });
         setError(
           `Selected range overlaps an existing vacation (${overlap.startDate} to ${overlap.endDate}). Edit or delete it first.`
         );
@@ -160,6 +184,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         endDate: formatDate(end),
       });
 
+      console.log('[VacationSelect] affordability', {
+        canAfford,
+        projectedBalance,
+      });
+
       if (!canAfford) {
         const hours = calculateVacationHoursForRange(
           start,
@@ -167,6 +196,10 @@ const CalendarView: React.FC<CalendarViewProps> = ({
           userProfile.workSchedule,
           holidays
         );
+        console.log('[VacationSelect] BLOCKED: insufficient balance', {
+          hoursNeeded: hours,
+          projectedBalance,
+        });
         setError(
           `Insufficient balance. Need ${hours}h, will have ${projectedBalance.toFixed(
             2
@@ -175,6 +208,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
         cancelSelection();
         return;
       }
+
+      console.log('[VacationSelect] CREATING vacation', {
+        startDate: formatDate(start),
+        endDate: formatDate(end),
+      });
 
       // Create vacation
       onAddVacation({
@@ -191,6 +229,11 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     if (dayInfo?.isInVacation && dayInfo.vacationId) {
       const vacation = plannedVacations.find((v) => v.id === dayInfo.vacationId);
       if (vacation) {
+        console.log('[VacationSelect] opening edit modal for existing vacation', {
+          vacationId: vacation.id,
+          startDate: vacation.startDate,
+          endDate: vacation.endDate,
+        });
         setEditingVacation(vacation);
         setShowEditModal(true);
         return;
@@ -198,6 +241,7 @@ const CalendarView: React.FC<CalendarViewProps> = ({
     }
 
     // Case 3: Idle click on a free date -> Start new selection
+    console.log('[VacationSelect] starting new selection at', formatDate(date));
     setSelectionMode('selecting');
     setStartDate(date);
     setError('');
