@@ -58,17 +58,17 @@ export const parseDate = (dateStr: string): Date => {
 ## Work Schedule Implementation
 
 ### 9/80 Schedule RDO Pattern
-**Decision**: Use ISO week numbers to determine RDO Fridays, enforced to "odd-fridays" pattern for JPL.
+**Decision**: Use absolute week count from a fixed reference RDO Friday, enforced to "odd-fridays" pattern for JPL.
 
 **Rationale**:
-- ISO weeks provide a consistent, internationally-recognized standard
-- Week numbering starts on Monday, which aligns well with the 9/80 two-week cycle
-- Provides predictable, reproducible results
+- A fixed reference date produces a continuous alternating pattern that never breaks across year boundaries
+- ISO week parity (the previous approach) breaks when a year has 53 ISO weeks (e.g. 2026, where Jan 1 = Thursday): both week 53 of that year and week 1 of the next year share the same odd/even parity, creating two consecutive non-RDO Fridays
+- Reference-date counting is immune to this — alternation is determined by absolute distance from a known anchor
 - **JPL Standard**: JPL uses the "odd-fridays" RDO pattern organization-wide
 
-**Implementation** ([src/utils/workScheduleUtils.ts:21-34](src/utils/workScheduleUtils.ts#L21-L34)):
-- Calculate ISO week number for any Friday
-- Odd-week pattern: RDO on odd-numbered weeks (JPL standard)
+**Implementation** ([src/utils/workScheduleUtils.ts](src/utils/workScheduleUtils.ts)):
+- Reference RDO Friday: January 10, 2025 (verified as RDO under the original pattern)
+- Count integer weeks from reference; even distance (0, ±2, ±4, …) = RDO
 - Pattern is automatically set when selecting 9/80 schedule (no user choice)
 - **Data Migration** (commit b189b88): Existing profiles with "even-fridays" are automatically converted to "odd-fridays" to match JPL policy
 
