@@ -381,7 +381,7 @@ const findRDOsInRange = (
   endDate: Date,
   workSchedule: WorkSchedule
 ): Date[] => {
-  if (workSchedule.type !== '9/80' || !workSchedule.rdoPattern) {
+  if (workSchedule.type !== '9/80') {
     return [];
   }
 
@@ -494,7 +494,7 @@ export const generateVacationRecommendations = (
  * Test the recommender with sample data
  */
 export const testRecommender = () => {
-  const workSchedule: WorkSchedule = { type: '9/80', rdoPattern: 'odd-fridays' };
+  const workSchedule: WorkSchedule = { type: '9/80' };
   const holidays: Holiday[] = [
     { name: 'Thanksgiving', date: '2026-11-26', hours: 9 },
     { name: 'Day After Thanksgiving', date: '2026-11-25', hours: 9 },

@@ -46,7 +46,6 @@ const UserInputForm: React.FC<UserInputFormProps> = ({ onSubmit, onBack }) => {
       balanceAsOfDate,
       workSchedule: {
         type: scheduleType,
-        rdoPattern: scheduleType === '9/80' ? 'odd-fridays' : undefined,
       },
       personalDayUsedInStartYear,
     };

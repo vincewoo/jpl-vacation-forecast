@@ -12,18 +12,18 @@ export const isWeekend = (date: Date): boolean => {
 
 const ONE_WEEK_MS = 604800000; // 7 * 24 * 60 * 60 * 1000
 
-// Jan 10, 2025 is a verified RDO Friday under JPL's "odd-fridays" pattern.
+// Jan 10, 2025 is a verified JPL RDO Friday used as the alternation anchor.
 // Using a fixed reference avoids the ISO week parity break that occurs when a year
 // has 53 weeks (e.g. 2026), which would otherwise produce two consecutive non-RDO Fridays
 // at the year boundary.
 const REFERENCE_RDO_FRIDAY_TS = new Date(2025, 0, 10).getTime();
 
 /**
- * Check if a Friday is an RDO based on the pattern.
+ * Check if a Friday is a 9/80 RDO.
  * Uses absolute week count from a fixed reference RDO Friday so the alternating
  * pattern never breaks across year boundaries.
  */
-export const isRDOFriday = (date: Date, rdoPattern: string): boolean => {
+export const isRDOFriday = (date: Date): boolean => {
   if (date.getDay() !== 5) return false; // Not a Friday
 
   // Count weeks from reference RDO Friday. Even distance (0, ±2, ±4, ...) = RDO.
@@ -46,7 +46,7 @@ export const getWorkHoursForDay = (
 
   // 9/80 schedule
   if (date.getDay() === 5) { // Friday
-    if (workSchedule.rdoPattern && isRDOFriday(date, workSchedule.rdoPattern)) {
+    if (isRDOFriday(date)) {
       return 0; // RDO
     }
     return SCHEDULE_CONFIGS['9/80'].hoursPerNonRDOFriday;
@@ -60,14 +60,13 @@ export const getWorkHoursForDay = (
  */
 export const getRDODatesInRange = (
   startDate: Date,
-  endDate: Date,
-  rdoPattern: string
+  endDate: Date
 ): Date[] => {
   const rdoDates: Date[] = [];
   const currentDate = new Date(startDate);
 
   while (currentDate <= endDate) {
-    if (currentDate.getDay() === 5 && isRDOFriday(currentDate, rdoPattern)) {
+    if (isRDOFriday(currentDate)) {
       rdoDates.push(new Date(currentDate));
     }
     currentDate.setDate(currentDate.getDate() + 1);
@@ -127,10 +126,8 @@ export const calculateVacationHoursForRange = (
  * Check if a specific date is an RDO
  */
 export const isRDO = (date: Date, workSchedule: WorkSchedule): boolean => {
-  if (workSchedule.type !== '9/80' || !workSchedule.rdoPattern) {
-    return false;
-  }
-  return isRDOFriday(date, workSchedule.rdoPattern);
+  if (workSchedule.type !== '9/80') return false;
+  return isRDOFriday(date);
 };
 
 /**

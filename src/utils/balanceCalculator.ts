@@ -119,9 +119,8 @@ export const calculateWeeklyBalances = (
     ).map(h => h.original);
 
     // Calculate RDO days for 9/80 schedules
-    const rdoDays = userProfile.workSchedule.type === '9/80' &&
-                    userProfile.workSchedule.rdoPattern
-      ? getRDODatesInRange(weekStart, weekEnd, userProfile.workSchedule.rdoPattern)
+    const rdoDays = userProfile.workSchedule.type === '9/80'
+      ? getRDODatesInRange(weekStart, weekEnd)
       : [];
 
     // Calculate total hours used this week (dynamically calculated from vacation dates)

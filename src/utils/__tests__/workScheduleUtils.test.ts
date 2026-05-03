@@ -11,7 +11,7 @@ import {
 import type { Holiday, WorkSchedule } from '../../types';
 
 const schedule540: WorkSchedule = { type: '5/40' };
-const schedule980: WorkSchedule = { type: '9/80', rdoPattern: 'odd-fridays' };
+const schedule980: WorkSchedule = { type: '9/80' };
 
 describe('workScheduleUtils', () => {
   describe('isWeekend', () => {
@@ -25,41 +25,24 @@ describe('workScheduleUtils', () => {
     });
   });
 
-  describe('isRDOFriday (odd-fridays / JPL standard)', () => {
-    it('returns false for non-Fridays regardless of pattern', () => {
-      expect(isRDOFriday(new Date(2026, 5, 15), 'odd-fridays')).toBe(false); // Mon
+  describe('isRDOFriday', () => {
+    it('returns false for non-Fridays', () => {
+      expect(isRDOFriday(new Date(2026, 5, 15))).toBe(false); // Mon
     });
 
     it('alternates RDO Fridays week by week', () => {
       // Two consecutive Fridays must produce opposite results.
-      const fri1 = new Date(2026, 5, 12); // Jun 12, 2026 (ISO week 24)
-      const fri2 = new Date(2026, 5, 19); // Jun 19, 2026 (ISO week 25)
-      const a = isRDOFriday(fri1, 'odd-fridays');
-      const b = isRDOFriday(fri2, 'odd-fridays');
-      expect(a).not.toBe(b);
+      const fri1 = new Date(2026, 5, 12); // Jun 12, 2026
+      const fri2 = new Date(2026, 5, 19); // Jun 19, 2026
+      expect(isRDOFriday(fri1)).not.toBe(isRDOFriday(fri2));
     });
 
-    it('odd-fridays and even-fridays patterns are inverses on the same Friday', () => {
-      const friday = new Date(2026, 5, 12);
-      expect(isRDOFriday(friday, 'odd-fridays')).not.toBe(
-        isRDOFriday(friday, 'even-fridays')
-      );
-    });
-
-    it('handles the year-boundary edge case (Jan 1 falling on Friday)', () => {
-      // Jan 1, 2027 is a Friday — its Thursday is Dec 31, 2026 (ISO week 53 of 2026).
-      // Jan 8, 2027 is in ISO week 1 of 2027. Both weeks are odd, so the JPL
-      // odd-fridays pattern legitimately keeps both as non-RDO. The contract
-      // we care about is: deterministic, non-throwing, and consistent across runs.
+    it('never produces two consecutive RDO Fridays across a 53-week year boundary', () => {
+      // 2026 has 53 ISO weeks (Jan 1 = Thursday). The old ISO-parity approach broke here.
+      // Jan 1, 2027 (week 53 of 2026) and Jan 8, 2027 (week 1 of 2027) must alternate.
       const jan1_2027 = new Date(2027, 0, 1);
-      expect(() => isRDOFriday(jan1_2027, 'odd-fridays')).not.toThrow();
-      const a = isRDOFriday(jan1_2027, 'odd-fridays');
-      const b = isRDOFriday(jan1_2027, 'odd-fridays');
-      expect(a).toBe(b);
-      // odd-fridays and even-fridays must remain inverses across the boundary.
-      expect(isRDOFriday(jan1_2027, 'odd-fridays')).not.toBe(
-        isRDOFriday(jan1_2027, 'even-fridays')
-      );
+      const jan8_2027 = new Date(2027, 0, 8);
+      expect(isRDOFriday(jan1_2027)).not.toBe(isRDOFriday(jan8_2027));
     });
   });
 
@@ -97,7 +80,7 @@ describe('workScheduleUtils', () => {
 
     it('matches isRDOFriday for 9/80 schedule', () => {
       const fri = new Date(2026, 5, 12);
-      expect(isRDO(fri, schedule980)).toBe(isRDOFriday(fri, 'odd-fridays'));
+      expect(isRDO(fri, schedule980)).toBe(isRDOFriday(fri));
     });
   });
 
@@ -105,7 +88,7 @@ describe('workScheduleUtils', () => {
     it('returns only Fridays', () => {
       const start = new Date(2026, 0, 1);
       const end = new Date(2026, 1, 28);
-      const rdos = getRDODatesInRange(start, end, 'odd-fridays');
+      const rdos = getRDODatesInRange(start, end);
       rdos.forEach(d => expect(d.getDay()).toBe(5));
     });
 
@@ -113,8 +96,7 @@ describe('workScheduleUtils', () => {
       // Over a 12-month span there should be roughly 26 RDOs (every other Friday of 52).
       const rdos = getRDODatesInRange(
         new Date(2026, 0, 1),
-        new Date(2026, 11, 31),
-        'odd-fridays'
+        new Date(2026, 11, 31)
       );
       expect(rdos.length).toBeGreaterThanOrEqual(25);
       expect(rdos.length).toBeLessThanOrEqual(27);
@@ -150,7 +132,7 @@ describe('workScheduleUtils', () => {
       // Pick two consecutive Fridays to find one RDO and one non-RDO.
       const fri1 = new Date(2026, 5, 12);
       const fri2 = new Date(2026, 5, 19);
-      const rdoFriday = isRDOFriday(fri1, 'odd-fridays') ? fri1 : fri2;
+      const rdoFriday = isRDOFriday(fri1) ? fri1 : fri2;
       const cost = calculateVacationHoursForRange(rdoFriday, rdoFriday, schedule980);
       expect(cost).toBe(0);
     });
@@ -161,7 +143,7 @@ describe('workScheduleUtils', () => {
       const nonRdoMonday = candidates.find(mon => {
         const fri = new Date(mon);
         fri.setDate(fri.getDate() + 4);
-        return !isRDOFriday(fri, 'odd-fridays');
+        return !isRDOFriday(fri);
       })!;
       const fri = new Date(nonRdoMonday);
       fri.setDate(fri.getDate() + 4);
