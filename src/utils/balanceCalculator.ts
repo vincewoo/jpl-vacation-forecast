@@ -267,13 +267,18 @@ export const calculateProjectedBalance = (
   plannedVacations: PlannedVacation[],
   holidays: Holiday[] = []
 ): number => {
-  const today = new Date();
   const profileStartDate = parseDate(userProfile.startDate);
+  const balanceAsOfDate = parseDate(userProfile.balanceAsOfDate);
 
-  // Calculate accrual from today to target date
-  const accrued = calculateAccrualForRange(profileStartDate, today, targetDate);
+  // Accrue from balanceAsOfDate (when currentBalance was sampled) to the
+  // target date. Using `today` here would silently drop months of accrual
+  // whenever balanceAsOfDate is in the past, causing this projection to
+  // disagree with the calendar's weekly balances.
+  const accrued = targetDate >= balanceAsOfDate
+    ? calculateAccrualForRange(profileStartDate, balanceAsOfDate, targetDate)
+    : 0;
 
-  // Calculate vacation usage from today to target date (dynamically calculated)
+  // Subtract every planned vacation ending on or before the target date.
   const used = plannedVacations
     .filter(vacation => {
       const vacEnd = parseDate(vacation.endDate);
@@ -281,7 +286,6 @@ export const calculateProjectedBalance = (
     })
     .reduce((sum, v) => {
       const vacationHours = getVacationHours(v, userProfile.workSchedule, holidays);
-      // Apply Personal Day deduction
       const deduction = v.personalDayUsed ? 8 : 0;
       return sum + Math.max(0, vacationHours - deduction);
     }, 0);
