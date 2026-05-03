@@ -13,13 +13,64 @@
   margin-bottom: 2rem;
 }
 
-.vacation-year-header {
+.vacation-status-group {
+  margin-bottom: 2.5rem;
+}
+
+.vacation-status-header {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 1rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid var(--border-primary);
-  color: var(--text-primary);
+}
+
+.vacation-status-header.upcoming-header {
+  color: var(--primary, #2563eb);
+  border-bottom-color: var(--primary, #2563eb);
+}
+
+.vacation-status-header.past-header {
+  color: var(--text-secondary, #6b7280);
+  border-bottom-color: var(--border-light, #e5e7eb);
+}
+
+.collapsible-header {
+  cursor: pointer;
+  user-select: none;
+  transition: color 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.collapsible-header:hover {
+  opacity: 0.8;
+}
+
+.collapsible-header:focus {
+  outline: 2px solid var(--primary, #2563eb);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.collapse-icon {
+  display: inline-block;
+  font-size: 0.7rem;
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.vacation-year-header {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.past-group .vacation-year-header {
+  opacity: 0.8;
 }
 
 .vacation-table-wrapper {
